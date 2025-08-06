@@ -20,5 +20,6 @@ from barimt_zasvarlagch_app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.zasvarlah, name='zasvarlah'),
+    path('', views.zasvarlah, name='zasvarlah'), #html
+    path('generate/', views.ebarimt_generate, name='generate'),  # API endpoint
 ]

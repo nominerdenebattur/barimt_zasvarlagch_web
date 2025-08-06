@@ -74,19 +74,19 @@ WSGI_APPLICATION = 'barimt_zasvarlagch.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-""""
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': ' ',
-        'USER': 'ebarimt_user',
-        'PASSWORD': 'Ebarimt_2022.',
+        'NAME': 'ebarimt_web',
+        'USER': 'db_user',
+        'PASSWORD': 'Change_123',
         'HOST': '10.10.90.237',
         'PORT': 3306,
     }
 }
-"""
 
+DBSHELL = 'C:/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

@@ -94,6 +94,54 @@
             border-radius: 6px;
             cursor: pointer;
         }
+        .document-box {
+            width: 420px;
+            max-height: 250px;
+            background: #fff;
+            border-radius: 8px;
+            overflow: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 10px;
+        }
+
+        .document-box table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: Arial, sans-serif;
+        }
+
+        .document-box th {
+            background: #2a9df4;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .document-box td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .document-box tr:hover {
+            background: #f2f2f2;
+        }
+
+        .submit-section button,
+        .document-header button {
+            background: #2a9df4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .submit-section button:hover,
+        .document-header button:hover {
+            background: #2a9df4;
+        }
+
     </style>
 </head>
 <body>
@@ -111,21 +159,24 @@
         <div class="form-section">
             <div class="form-group">
                 <label>Нийт дүн</label>
-                <input type="text">
+                <input type="text" name="totalAmount" id="totalAmount">
             </div>
+            <!-- Байгууллагын регистер -->
             <div class="form-group">
                 <label>Байгууллагын регистерийн дугаар</label>
                 <small>Байгууллага биш бол хоосон үлдээнэ үү!</small>
-                <input type="text">
+                <input type="text" name="companyReg" id="companyReg">
             </div>
-            <div class="form-group">
-                <label>Дэлгүүрийн дугаар</label>
-                <input type="text">
-            </div>
+            <!-- Баримтын төрөл -->
             <div class="form-group">
                 <label>Баримтын төрөл</label>
                 <small>Байгууллага бол 3, хувь хүн бол 1</small>
-                <input type="text">
+                <input type="text" name="lottery" id="lottery" value="1" readonly>
+            </div>
+            <!-- Дэлгүүрийн дугаар -->
+            <div class="form-group">
+                <label>Дэлгүүрийн дугаар</label>
+                <input type="text" name="storeId" id="storeId">
             </div>
         </div>
 
@@ -133,14 +184,75 @@
         <div class="document-section">
             <div class="document-header">
                 <h3>Баримт</h3>
-                <button>Баримт татаж авах</button>
+                <button id="exportBtn">Баримт татаж авах</button>
             </div>
             <div class="document-box"></div>
         </div>
     </main>
 
     <div class="submit-section">
-        <button>Баримт үүсгэх</button>
+        <button id="generateBtn">Баримт үүсгэх</button>
     </div>
+<script>
+        document.getElementById('companyReg').addEventListener('input', function () {
+            const companyField = this.value.trim();
+            const lotteryField = document.getElementById('lottery');
+
+            if (companyField !== "") {
+                lotteryField.value = 3; // baiguullaga
+            } else {
+                lotteryField.value = 1; // huvi hun
+            }
+        });
+        document.getElementById('generateBtn').addEventListener('click', function () {
+            const amount = document.getElementById('totalAmount').value;
+            const companyRegNo = document.getElementById('companyReg' ).value;
+            const storeNo = document.getElementById('storeId').value;
+
+            fetch(`/generate/?totalAmount=${totalAmount}=$}&storeId=${storeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    //browser-ийн console дээр (F12 → Console tab) JSON response-ийг харах
+                    console.log(data);
+
+                    // HTML хүснэгтэнд харуулах
+                    document.querySelector('.document-box').innerHTML = `
+                        <table class="table" border="1" width="100%">
+                            <tr>
+                                <th>Нийт дүн</th>
+                                <th>Сугалааны дугаар</th>
+                                <th>billId</th>
+                                <th>subBillId</th>
+                                <th>Дэлгүүрийн дугаар</th>
+                                <th>Байгууллагын регистр</th>
+                            </tr>
+                            <tr>
+                                <td>${amount}</td>
+                                <td>${data.lottery}</td>
+                                <td>${data.billId}</td>
+                                <td>${data.subBillId}</td>
+                                <td>${storeNo}</td>
+                                <td>${companyRegNo}</td>
+                            </tr>
+                        </table>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Алдаа гарлаа. Дахин оролдоно уу.");
+                });
+            // confirm tsonh haruulah
+             if (confirm(
+                `Баримт үүсгэхэд итгэлтэй байна уу?\n
+                Нийт дүн: ${totalAmount}\n
+                Байгууллагын регистр: $ || '-'}`
+            )) {
+            } else {
+                alert("Та мэдээллээ шалгаад дахин оролдоно уу.");
+            }
+
+        });
+
+</script>
 </body>
 </html>
