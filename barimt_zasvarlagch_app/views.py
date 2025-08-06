@@ -1,15 +1,18 @@
 import os
 import pandas as pd
 
-from django.contrib.sites import requests
+import requests
+import json
+from django.db.models.fields import json
 from django.shortcuts import render
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils.datetime_safe import datetime
 from .models import Barimt
 
 def zasvarlah(request):
     return render(request, 'zasvarlah.html')
+
 
 def ebarimt_generate(request):
     # === Input Data ===
@@ -62,14 +65,15 @@ def ebarimt_generate(request):
     store_str = str(store).lstrip('0') or '0'
     store_num = int(store_str)
     if store_num > 450:
-        url = f"http://10.10.90.233/23/api/?store={store_param}"
-    else:
         url = f"http://10.10.90.234/23/api/?store={store_param}"
+    else:
+        url = f"http://10.10.90.233/23/api/?store={store_param}"
 
     headers = {"Content-Type": "application/json"}
     response = requests.post(url, headers=headers, data=json.dumps(data))
 
     print("Status code:", response.status_code)
+
 
     # === Excel Log ===
     log_file = "api_post_log.xlsx"
@@ -100,4 +104,54 @@ def ebarimt_generate(request):
         df = pd.DataFrame([log_row])
 
     df.to_excel(log_file, index=False)
+    print(f"url: {url}")
+    print(f"Reponse: {response_json}")
     print(f"✅ Excel log updated: {log_file}")
+    
+#nemelteer hiih
+def export_excel(request):
+    # Жишээ дата (үндсэндээ фронтоос ирсэн өгөгдлийг ашиглаж болно)
+    amount = request.GET.get('amount', '0')
+    company_reg = request.GET.get('companyReg', '-')
+    store_no = request.GET.get('storeId', '-')
+
+    # DataFrame болгож Excel файлд бичих
+    df = pd.DataFrame([{
+        "Нийт дүн": amount,
+        "Сугалааны дугаар": "TEST12345",
+        "billId": "BILL001",
+        "subBillId": "SUB001",
+        "Дэлгүүрийн дугаар": store_no,
+        "Байгууллагын регистр": company_reg
+    }])
+
+    # HTTP хариуг Excel болгон буцаах
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = f'attachment; filename="barimt_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
+
+    # pandas ашиглаж Excel руу шууд бичих
+    with pd.ExcelWriter(response, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Баримт')
+
+    return response
+
+
+#ugugdluu databased hadgalah
+class MyData:
+    pass
+
+def save_data(request):
+    if request.method == "POST":
+        # Request body-аас JSON өгөгдлийг авах
+        data = json.loads(request.body)
+
+        # Загварт хадгалах
+        obj = MyData.objects.create(
+            billId=data.get("billId"),
+            subBillId=data.get("subBillId"),
+            lottery=data.get("lottery")
+        )
+
+        return JsonResponse({"status": "success", "id": obj.id})

@@ -195,13 +195,13 @@
     </div>
 <script>
         document.getElementById('companyReg').addEventListener('input', function () {
-            const companyField = this.value.trim();
-            const lotteryField = document.getElementById('lottery');
+            const companyFieldInput = this.value.trim();
+            const lotteryFieldInput = document.getElementById('lottery');
 
-            if (companyField !== "") {
-                lotteryField.value = 3; // baiguullaga
+            if (companyFieldInput !== "") {
+                lotteryFieldInput.value = 3; // baiguullaga
             } else {
-                lotteryField.value = 1; // huvi hun
+                lotteryFieldInput.value = 1; // huvi hun
             }
         });
         document.getElementById('generateBtn').addEventListener('click', function () {
@@ -209,12 +209,34 @@
             const companyRegNo = document.getElementById('companyReg' ).value;
             const storeNo = document.getElementById('storeId').value;
 
-            fetch(`/generate/?totalAmount=${totalAmount}=$}&storeId=${storeId}`)
+            // Zaaval bugluh talbaruudiig shalgah
+            if (amount === '') {
+                alert("Нийт дүн оруулна уу.");
+                return; // Үргэлжлүүлэхгүй
+            }
+            if (storeNo === '') {
+                alert("Дэлгүүрийн дугаар оруулна уу.");
+                return;
+            }
+            if (confirm(
+                `Баримт үүсгэхэд итгэлтэй байна уу?\n
+                Нийт дүн: ${amount}\n
+                Байгууллагын регистр: ${companyRegNo}`
+            )) {
+            } else {
+                alert("Та мэдээллээ шалгаад дахин оролдоно уу.");
+            }
+                    // Орлуулсан талбаруудыг хоослох
+        document.getElementById('totalAmount').value = '';
+        document.getElementById('companyReg').value = '';
+        document.getElementById('lottery').value = '1';  // Байгууллага эсэхийг автоматаар тохируулах
+        document.getElementById('storeId').value = '';
+
+            fetch(`/generate/?amount=${amount}=$}&storeId=${storeNo}`)
                 .then(response => response.json())
                 .then(data => {
                     //browser-ийн console дээр (F12 → Console tab) JSON response-ийг харах
                     console.log(data);
-
                     // HTML хүснэгтэнд харуулах
                     document.querySelector('.document-box').innerHTML = `
                         <table class="table" border="1" width="100%">
@@ -242,16 +264,43 @@
                     alert("Алдаа гарлаа. Дахин оролдоно уу.");
                 });
             // confirm tsonh haruulah
-             if (confirm(
-                `Баримт үүсгэхэд итгэлтэй байна уу?\n
-                Нийт дүн: ${totalAmount}\n
-                Байгууллагын регистр: $ || '-'}`
-            )) {
-            } else {
-                alert("Та мэдээллээ шалгаад дахин оролдоно уу.");
-            }
 
         });
+
+ /*
+    // test: table ee harahiin tuld hiihed ashiglah table
+        document.querySelector('.document-box').innerHTML = `
+            <table class="table" border="1" width="100%">
+                <tr>
+                    <th>Нийт дүн</th>
+                    <th>Сугалааны дугаар</th>
+                    <th>billId</th>
+                    <th>subBillId</th>
+                    <th>Дэлгүүрийн дугаар</th>
+                    <th>Байгууллагын регистр</th>
+                </tr>
+                <tr>
+                    <td>${amount}</td>
+                    <td>TEST12345</td>
+                    <td>BILL001</td>
+                    <td>SUB001</td>
+                    <td>${storeNo}</td>
+                    <td>${companyRegNo || 'null'}</td>
+                </tr>
+            </table>
+        `;
+    });
+
+  */
+         // excel eer export hiih event
+    document.getElementById('exportBtn').addEventListener('click', function () {
+        const amount = document.getElementById('totalAmount').value;
+        const companyRegNo = document.getElementById('companyReg').value;
+        const storeNo = document.getElementById('storeId').value;
+
+        // Шууд линк үүсгээд Excel татна
+        window.location.href = `/export_excel/?amount=${amount}&gecompanyReg=${companyRegNo}&storeId=${storeNo}`;
+    });
 
 </script>
 </body>

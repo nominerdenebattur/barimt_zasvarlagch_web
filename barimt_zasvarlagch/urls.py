@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.zasvarlah, name='zasvarlah'), #html
     path('generate/', views.ebarimt_generate, name='generate'),  # API endpoint
+    path('export_excel/', views.export_excel, name='export_excel'),
 ]
