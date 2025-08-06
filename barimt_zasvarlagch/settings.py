@@ -74,13 +74,18 @@ WSGI_APPLICATION = 'barimt_zasvarlagch.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
+""""
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': ' ',
+        'USER': 'ebarimt_user',
+        'PASSWORD': 'Ebarimt_2022.',
+        'HOST': '10.10.90.237',
+        'PORT': 3306,
     }
 }
+"""
 
 
 # Password validation

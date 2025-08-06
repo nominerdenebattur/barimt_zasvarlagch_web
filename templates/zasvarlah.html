@@ -3,46 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Засварлах</title>
+    <title>Баримт Засварлагч</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 20px;
+            margin: 0;
+            background: #fdfdfd;
         }
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #666;
+            color: white;
+            padding: 10px 30px;
         }
-        .section {
-            margin-bottom: 15px;
+        header .logo {
+            font-weight: bold;
         }
-        .indented {
-            margin-left: 20px;
+        header nav button {
+            margin-left: 10px;
+            background: #bbb;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 50px;
+            padding: 50px 20px;
+        }
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .form-group small {
+            color: gray;
+            font-size: 12px;
+        }
+        .form-group input {
+            width: 200px;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .document-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .document-header button {
+            background: #ccc;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .document-box {
+            width: 400px;
+            height: 250px;
+            background: #e0e0e0;
+            border-radius: 6px;
+        }
+        .submit-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+        }
+        .submit-section button {
+            background: #ccc;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>Засварлах</h1>
+    <header>
+        <div class="logo">Лого1 | Лого2</div>
+        <nav>
+            <button>Засварлах</button>
+            <button>Хянах</button>
+            <button>Тайлан</button>
+        </nav>
+    </header>
 
-    <div class="section">
-        <div>Лого 1| Лого 2</div>
-        <div>Засварлах</div>
-        <div>Хянах</div>
-        <div>Тайлан</div>
-    </div>
+    <main>
+        <!-- Баримтын мэдээлэл -->
+        <div class="form-section">
+            <div class="form-group">
+                <label>Нийт дүн</label>
+                <input type="text">
+            </div>
+            <div class="form-group">
+                <label>Байгууллагын регистерийн дугаар</label>
+                <small>Байгууллага биш бол хоосон үлдээнэ үү!</small>
+                <input type="text">
+            </div>
+            <div class="form-group">
+                <label>Дэлгүүрийн дугаар</label>
+                <input type="text">
+            </div>
+            <div class="form-group">
+                <label>Баримтын төрөл</label>
+                <small>Байгууллага бол 3, хувь хүн бол 1</small>
+                <input type="text">
+            </div>
+        </div>
 
-    <div class="section">
-        <div>Баримтын мэдээлэл</div>
-        <div class="indented">Нийт дүн</div>
-        <div class="indented">Байгууллагын регистерийн дугаар</div>
-        <div class="indented">Дэлгүүрийн дугаар</div>
-        <div class="indented">Баримтын төрөл</div>
-    </div>
+        <!-- Баримт талбар -->
+        <div class="document-section">
+            <div class="document-header">
+                <h3>Баримт</h3>
+                <button>Баримт татаж авах</button>
+            </div>
+            <div class="document-box"></div>
+        </div>
+    </main>
 
-    <div class="section">
-        <div>Баримт</div>
-        <div>Баримт татах</div>
+    <div class="submit-section">
+        <button>Баримт үүсгэх</button>
     </div>
 </body>
 </html>
