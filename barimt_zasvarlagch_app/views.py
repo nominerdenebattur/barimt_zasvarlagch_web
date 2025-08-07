@@ -7,6 +7,7 @@ from django.http import JsonResponse, HttpResponse
 from django.utils.datetime_safe import datetime
 from .models import Barimt
 
+
 def zasvarlah(request):
     return render(request, 'zasvarlah.html')
 
@@ -14,11 +15,13 @@ def zasvarlah(request):
 def ebarimt_generate(request):
     # === Input Data ===
     totalAmount = request.GET.get('totalAmount')
-    regNo = request.GET.get('companyReg')
-    try:
-        company_reg_int = str(regNo) if regNo else None
-    except ValueError:
-        company_reg_int = None
+    regNo = request.GET.get('companyId')
+    company_reg_int = str(regNo) if regNo else None
+
+    # if regNo:
+    #     billType = 1
+    # else:
+    #     billType = 3
     store = request.GET.get('storeId')
 
     vat = "1.00"
@@ -78,19 +81,17 @@ def ebarimt_generate(request):
     print(f"Response: {response}")
     print("Status code:", response.status_code)
 
-
     try:
         response_json = response.json()
         bill_id = response_json.get("billId", "")
         sub_bill_id = response_json.get("subBillId", "")
-        lottery=response_json.get("lottery", "")
+        lottery = response_json.get("lottery", "")
         print(f"Reponse json: {response_json}")
     except Exception:
         bill_id = ""
         sub_bill_id = ""
         lottery = ""
         print("⚠️ Failed to parse JSON response")
-
 
     # hervee status code 200 buyu amjilttai bolvol database-d hadgalna
     if response.status_code == 200:
@@ -112,7 +113,8 @@ def ebarimt_generate(request):
     else:
         return JsonResponse({"status": "failed", "message": "API call unsuccessful"}, status=500)
 
-#excel file-aar tataj avah heseg
+
+# excel file-aar tataj avah heseg
 def export_excel(request):
     # jishee data (frontoos irsen ugugdliig ashiglana)
     amount = request.GET.get('amount')
@@ -157,4 +159,3 @@ def export_excel(request):
         df.to_excel(writer, index=False, sheet_name='Баримт')
 
     return response
-
