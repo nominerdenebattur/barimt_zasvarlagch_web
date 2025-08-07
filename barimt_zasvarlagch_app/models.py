@@ -6,4 +6,12 @@ class Barimt(models.Model):
     billId = models.CharField(max_length=50, default="0")
     subBillId = models.CharField(max_length=50, default="0")
     storeId = models.CharField(max_length=5, default="0")
-    companyId = models.IntegerField(default=0)
+    #companyId -> companyReg
+    companyReg = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+    # ?
+    def __str__(self):
+        return f"{self.billId or 'NoBill'} - {self.totalAmount}"
+

@@ -1,10 +1,7 @@
 import os
 import pandas as pd
-
 import requests
 import json
-from django.db.models.fields import json
-from django.shortcuts import render
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.utils.datetime_safe import datetime
@@ -17,6 +14,7 @@ def zasvarlah(request):
 def ebarimt_generate(request):
     # === Input Data ===
     totalAmount = request.GET.get('totalAmount')
+    #companyId?
     regNo = request.GET.get('companyId')
     store = request.GET.get('storeId')
 
@@ -25,6 +23,7 @@ def ebarimt_generate(request):
     nonCashAmount = "0.00"
     amount = totalAmount
     cityTax = "0.00"
+    #aldaa billType aa bas avtomataar avna
     billType = "1"
 
     data = {
@@ -61,9 +60,9 @@ def ebarimt_generate(request):
     }
 
     store_param = f"{store}put"
-
     store_str = str(store).lstrip('0') or '0'
     store_num = int(store_str)
+
     if store_num > 450:
         url = f"http://10.10.90.234/23/api/?store={store_param}"
     else:
@@ -72,11 +71,9 @@ def ebarimt_generate(request):
     headers = {"Content-Type": "application/json"}
     response = requests.post(url, headers=headers, data=json.dumps(data))
 
-    print("Status code:", response.status_code)
+    #print("Status code:", response.status_code)
 
 
-    # === Excel Log ===
-    log_file = "api_post_log.xlsx"
     today = datetime.today().strftime("%Y-%m-%d")
 
     try:
@@ -88,34 +85,36 @@ def ebarimt_generate(request):
         sub_bill_id = ""
         print("⚠️ Failed to parse JSON response")
 
-    # Prepare log row
-    log_row = {
-        "date": today,
-        "amount": totalAmount,
-        "billId": bill_id,
-        "subBillId": sub_bill_id
-    }
 
-    # Append to Excel
-    if os.path.exists(log_file):
-        df = pd.read_excel(log_file)
-        df = pd.concat([df, pd.DataFrame([log_row])], ignore_index=True)
+    # hervee status code 200 buyu amjilttai bolvol database-d hadgalna
+    if response.status_code == 200:
+        obj = Barimt.objects.create(
+            billId=bill_id,
+            subBillId=sub_bill_id,
+            #html-s importloh?
+            lottery=lottery,
+            totalAmount=totalAmount,
+            companyId=int(regNo),
+            storeId=store
+        )
+        return JsonResponse({
+            "status": "success",
+            "billId": bill_id,
+            "subBillId": sub_bill_id,
+            "lottery": lottery,
+            "id": obj.id
+        })
     else:
-        df = pd.DataFrame([log_row])
+        return JsonResponse({"status": "failed", "message": "API call unsuccessful"}, status=500)
 
-    df.to_excel(log_file, index=False)
-    print(f"url: {url}")
-    print(f"Reponse: {response_json}")
-    print(f"✅ Excel log updated: {log_file}")
-    
-#nemelteer hiih
+#excel file-aar tataj avah heseg
 def export_excel(request):
-    # Жишээ дата (үндсэндээ фронтоос ирсэн өгөгдлийг ашиглаж болно)
+    # jishee data (frontoos irsen ugugdliig ashiglana)
     amount = request.GET.get('amount', '0')
     company_reg = request.GET.get('companyReg', '-')
     store_no = request.GET.get('storeId', '-')
 
-    # DataFrame болгож Excel файлд бичих
+    # DataFrame bolgij excel filed bichih
     df = pd.DataFrame([{
         "Нийт дүн": amount,
         "Сугалааны дугаар": "TEST12345",
@@ -125,33 +124,15 @@ def export_excel(request):
         "Байгууллагын регистр": company_reg
     }])
 
-    # HTTP хариуг Excel болгон буцаах
+    # HTTP hariug excel bolgon butsaah
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     )
     response['Content-Disposition'] = f'attachment; filename="barimt_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
 
-    # pandas ашиглаж Excel руу шууд бичих
+    # pandas аshiglaj Excel ruu shuud bichih
     with pd.ExcelWriter(response, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Баримт')
 
     return response
 
-
-#ugugdluu databased hadgalah
-class MyData:
-    pass
-
-def save_data(request):
-    if request.method == "POST":
-        # Request body-аас JSON өгөгдлийг авах
-        data = json.loads(request.body)
-
-        # Загварт хадгалах
-        obj = MyData.objects.create(
-            billId=data.get("billId"),
-            subBillId=data.get("subBillId"),
-            lottery=data.get("lottery")
-        )
-
-        return JsonResponse({"status": "success", "id": obj.id})

@@ -232,40 +232,41 @@
         document.getElementById('lottery').value = '1';  // Байгууллага эсэхийг автоматаар тохируулах
         document.getElementById('storeId').value = '';
 
-            fetch(`/generate/?amount=${amount}=$}&storeId=${storeNo}`)
-                .then(response => response.json())
-                .then(data => {
-                    //browser-ийн console дээр (F12 → Console tab) JSON response-ийг харах
-                    console.log(data);
-                    // HTML хүснэгтэнд харуулах
-                    document.querySelector('.document-box').innerHTML = `
-                        <table class="table" border="1" width="100%">
-                            <tr>
-                                <th>Нийт дүн</th>
-                                <th>Сугалааны дугаар</th>
-                                <th>billId</th>
-                                <th>subBillId</th>
-                                <th>Дэлгүүрийн дугаар</th>
-                                <th>Байгууллагын регистр</th>
-                            </tr>
-                            <tr>
-                                <td>${amount}</td>
-                                <td>${data.lottery}</td>
-                                <td>${data.billId}</td>
-                                <td>${data.subBillId}</td>
-                                <td>${storeNo}</td>
-                                <td>${companyRegNo}</td>
-                            </tr>
-                        </table>
-                    `;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert("Алдаа гарлаа. Дахин оролдоно уу.");
+            fetch(`/generate/?totalAmount=${amount}&companyId=${companyRegNo}&storeId=${storeNo}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                document.querySelector('.document-box').innerHTML = `
+                    <table class="table" border="1" width="100%">
+                        <tr>
+                            <th>Нийт дүн</th>
+                            <th>Сугалааны дугаар</th>
+                            <th>billId</th>
+                            <th>subBillId</th>
+                            <th>Дэлгүүрийн дугаар</th>
+                            <th>Байгууллагын регистр</th>
+                        </tr>
+                        <tr>
+                            <td>${amount}</td>
+                            <td>${data.lottery || '-'}</td>
+                            <td>${data.billId || '-'}</td>
+                            <td>${data.subBillId || '-'}</td>
+                            <td>${storeNo}</td>
+                            <td>${companyRegNo || '-'}</td>
+                        </tr>
+                    </table>
+                `;
+                // Response ирсний дараа input-уудыг хоосол
+                document.getElementById('totalAmount').value = '';
+                document.getElementById('companyReg').value = '';
+                document.getElementById('lottery').value = '1';
+                document.getElementById('storeId').value = '';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Алдаа гарлаа. Дахин оролдоно уу.");
+            });
                 });
-            // confirm tsonh haruulah
-
-        });
 
  /*
     // test: table ee harahiin tuld hiihed ashiglah table
