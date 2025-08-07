@@ -15,9 +15,9 @@ def ebarimt_generate(request):
     # === Input Data ===
     totalAmount = request.GET.get('totalAmount')
     #companyId?
-    regNo = request.GET.get('companyId', '')
+    regNo = request.GET.get('companyReg', '')
     try:
-        company_reg_int = int(regNo) if regNo else None
+        company_reg_int = str(regNo) if regNo else None
     except ValueError:
         company_reg_int = None
     store = request.GET.get('storeId')
@@ -27,7 +27,7 @@ def ebarimt_generate(request):
     nonCashAmount = "0.00"
     amount = totalAmount
     cityTax = "0.00"
-    billType = request.GET.get("billType", "1")
+    billType = regNo
 
     data = {
         "stocks": [
@@ -73,6 +73,9 @@ def ebarimt_generate(request):
 
     headers = {"Content-Type": "application/json"}
     response = requests.post(url, headers=headers, data=json.dumps(data))
+
+    print(f"request: {data}")
+    print(f"response url: {url}")
     print(f"Response: {response}")
     print("Status code:", response.status_code)
 

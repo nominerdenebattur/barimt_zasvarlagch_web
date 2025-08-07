@@ -34,7 +34,7 @@
             justify-content: center;
             align-items: flex-start;
             gap: 50px;
-            padding: 50px 20px;
+            padding: 100px 20px;
         }
         .form-section {
             display: flex;
@@ -54,7 +54,7 @@
             font-size: 12px;
         }
         .form-group input {
-            width: 200px;
+            width: 250px;
             padding: 8px;
             border-radius: 6px;
             border: 1px solid #ccc;
@@ -62,7 +62,7 @@
         .document-section {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 5px;
         }
         .document-header {
             display: flex;
@@ -95,13 +95,13 @@
             cursor: pointer;
         }
         .document-box {
-            width: 420px;
+            width: 900px;
             max-height: 250px;
             background: #fff;
             border-radius: 8px;
             overflow: auto;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            padding: 10px;
+            padding: 5px;
         }
 
         .document-box table {
@@ -206,7 +206,7 @@
         });
         document.getElementById('generateBtn').addEventListener('click', function () {
             const amount = document.getElementById('totalAmount').value;
-            const companyRegNo = document.getElementById('companyReg' ).value;
+            const companyRegNo = document.getElementById('companyReg', '').value;
             const storeNo = document.getElementById('storeId').value;
 
             // Zaaval bugluh talbaruudiig shalgah
