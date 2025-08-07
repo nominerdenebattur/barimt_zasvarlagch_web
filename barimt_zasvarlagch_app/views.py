@@ -113,27 +113,44 @@ def ebarimt_generate(request):
 #excel file-aar tataj avah heseg
 def export_excel(request):
     # jishee data (frontoos irsen ugugdliig ashiglana)
-    amount = request.GET.get('amount', '0')
-    company_reg = request.GET.get('companyReg', '-')
-    store_no = request.GET.get('storeId', '-')
+    amount = request.GET.get('amount')
+    company_reg = request.GET.get('companyReg')
+    store_no = request.GET.get('storeId')
 
-    # DataFrame bolgij excel filed bichih
-    df = pd.DataFrame([{
-        "Нийт дүн": amount,
-        "Сугалааны дугаар": "TEST12345",
-        "billId": "BILL001",
-        "subBillId": "SUB001",
-        "Дэлгүүрийн дугаар": store_no,
-        "Байгууллагын регистр": company_reg
-    }])
+    queryset = Barimt.objects.all()
 
-    # HTTP hariug excel bolgon butsaah
+    if amount:
+        queryset = queryset.filter(totalAmount=amount)
+    if company_reg:
+        queryset = queryset.filter(companyReg=company_reg)
+    if store_no:
+        queryset = queryset.filter(storeId=store_no)
+
+    # Хоосон байвал шууд мэдэгдэнэ
+    if not queryset.exists():
+        return JsonResponse({"status": "failed", "message": "Мэдээлэл олдсонгүй"}, status=404)
+
+    # DB-с ирсэн өгөгдлийг pandas DataFrame болгож хөрвүүлнэ
+    data = []
+    for obj in queryset:
+        data.append({
+            "Нийт дүн": obj.totalAmount,
+            "Сугалааны дугаар": obj.lottery,
+            "billId": obj.billId,
+            "subBillId": obj.subBillId,
+            "Дэлгүүрийн дугаар": obj.storeId,
+            "Байгууллагын регистр": obj.companyReg,
+            "Огноо": obj.created.strftime('%Y-%m-%d %H:%M:%S')
+        })
+
+    df = pd.DataFrame(data)
+
+    # Excel файл үүсгээд буцаана
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     )
     response['Content-Disposition'] = f'attachment; filename="barimt_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
 
-    # pandas аshiglaj Excel ruu shuud bichih
     with pd.ExcelWriter(response, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Баримт')
 

@@ -77,7 +77,7 @@
             cursor: pointer;
         }
         .document-box {
-            width: 400px;
+            width: 100px;
             height: 250px;
             background: #e0e0e0;
             border-radius: 6px;
@@ -241,17 +241,17 @@
                         <tr>
                             <th>Нийт дүн</th>
                             <th>Сугалааны дугаар</th>
-                            <th>billId</th>
-                            <th>subBillId</th>
                             <th>Дэлгүүрийн дугаар</th>
+                            <th>subBillId</th>
+                            <th>billId</th>
                             <th>Байгууллагын регистр</th>
                         </tr>
                         <tr>
                             <td>${amount}</td>
                             <td>${data.lottery || '-'}</td>
-                            <td>${data.billId || '-'}</td>
-                            <td>${data.subBillId || '-'}</td>
                             <td>${storeNo}</td>
+                            <td>${data.subBillId || '-'}</td>
+                            <td>${data.billId || '-'}</td>
                             <td>${companyRegNo || '-'}</td>
                         </tr>
                     </table>

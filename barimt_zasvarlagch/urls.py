@@ -22,5 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.zasvarlah, name='zasvarlah'), #html
     path('generate/', views.ebarimt_generate, name='generate'),
-    path('export/', views.export_excel, name='export_excel'),
+    path('export_excel/', views.export_excel, name='export_excel'),
 ]
