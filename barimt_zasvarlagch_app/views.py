@@ -15,7 +15,11 @@ def ebarimt_generate(request):
     # === Input Data ===
     totalAmount = request.GET.get('totalAmount')
     #companyId?
-    regNo = request.GET.get('companyId')
+    regNo = request.GET.get('companyId', '0')
+    try:
+        company_reg_int = int(regNo) if regNo else 0
+    except ValueError:
+        company_reg_int = 0
     store = request.GET.get('storeId')
 
     vat = "1.00"
@@ -23,7 +27,6 @@ def ebarimt_generate(request):
     nonCashAmount = "0.00"
     amount = totalAmount
     cityTax = "0.00"
-    #aldaa billType aa bas avtomataar avna
     billType = request.GET.get("billType", "1")
 
     data = {
@@ -71,10 +74,8 @@ def ebarimt_generate(request):
     headers = {"Content-Type": "application/json"}
     response = requests.post(url, headers=headers, data=json.dumps(data))
 
-    #print("Status code:", response.status_code)
+    print("Status code:", response.status_code)
 
-
-    today = datetime.today().strftime("%Y-%m-%d")
 
     try:
         response_json = response.json()
@@ -93,10 +94,9 @@ def ebarimt_generate(request):
         obj = Barimt.objects.create(
             billId=bill_id,
             subBillId=sub_bill_id,
-            #html-s importloh?
             lottery=lottery,
             totalAmount=totalAmount,
-            companyReg=int(regNo),
+            companyReg=company_reg_int,
             storeId=store
         )
         return JsonResponse({

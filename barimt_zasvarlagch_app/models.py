@@ -8,7 +8,6 @@ class Barimt(models.Model):
     storeId = models.CharField(max_length=5, default="0")
     #companyId -> companyReg
     companyReg = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
 
 
     # ?
