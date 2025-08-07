@@ -206,8 +206,9 @@
         });
         document.getElementById('generateBtn').addEventListener('click', function () {
             const amount = document.getElementById('totalAmount').value;
-            const companyRegNo = document.getElementById('companyReg', '').value;
+            const companyRegNo = document.getElementById('companyReg').value;
             const storeNo = document.getElementById('storeId').value;
+            const receiptType = document.getElementById('companyFieldTypeInput').value;
 
             // Zaaval bugluh talbaruudiig shalgah
             if (amount === '') {
@@ -232,7 +233,7 @@
         document.getElementById('companyFieldTypeInput').value = '1';  // Байгууллага эсэхийг автоматаар тохируулах
         document.getElementById('storeId').value = '';
 
-        fetch(`/generate/?totalAmount=${amount}&companyId=${companyRegNo}&storeId=${storeNo}`)
+        fetch(`/generate/?totalAmount=${amount}&companyId=${companyRegNo}&storeId=${storeNo}&companyFieldTypeInput=${receiptType}`)
             .then(response => response.json())
             .then(data => {
                 console.log(data);

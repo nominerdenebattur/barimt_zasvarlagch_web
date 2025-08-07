@@ -14,8 +14,7 @@ def zasvarlah(request):
 def ebarimt_generate(request):
     # === Input Data ===
     totalAmount = request.GET.get('totalAmount')
-    #companyId?
-    regNo = request.GET.get('companyReg', '')
+    regNo = request.GET.get('companyReg')
     try:
         company_reg_int = str(regNo) if regNo else None
     except ValueError:
@@ -27,7 +26,7 @@ def ebarimt_generate(request):
     nonCashAmount = "0.00"
     amount = totalAmount
     cityTax = "0.00"
-    billType = regNo
+    billType = request.GET.get('companyFieldTypeInput')
 
     data = {
         "stocks": [
