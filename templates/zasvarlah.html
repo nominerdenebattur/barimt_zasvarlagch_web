@@ -171,7 +171,7 @@
             <div class="form-group">
                 <label>Баримтын төрөл</label>
                 <small>Байгууллага бол 3, хувь хүн бол 1</small>
-                <input type="text" name="lottery" id="lottery" value="1" readonly>
+                <input type="text" name="companyFieldTypeInput" id="companyFieldTypeInput" value="1" readonly>
             </div>
             <!-- Дэлгүүрийн дугаар -->
             <div class="form-group">
@@ -196,12 +196,12 @@
 <script>
         document.getElementById('companyReg').addEventListener('input', function () {
             const companyFieldInput = this.value.trim();
-            const lotteryFieldInput = document.getElementById('lottery');
+            const companyFieldTypeInput = document.getElementById('companyFieldTypeInput');
 
             if (companyFieldInput !== "") {
-                lotteryFieldInput.value = 3; // baiguullaga
+                companyFieldTypeInput.value = 3; // baiguullaga
             } else {
-                lotteryFieldInput.value = 1; // huvi hun
+                companyFieldTypeInput.value = 1; // huvi hun
             }
         });
         document.getElementById('generateBtn').addEventListener('click', function () {
@@ -229,10 +229,10 @@
                     // Орлуулсан талбаруудыг хоослох
         document.getElementById('totalAmount').value = '';
         document.getElementById('companyReg').value = '';
-        document.getElementById('lottery').value = '1';  // Байгууллага эсэхийг автоматаар тохируулах
+        document.getElementById('companyFieldTypeInput').value = '1';  // Байгууллага эсэхийг автоматаар тохируулах
         document.getElementById('storeId').value = '';
 
-            fetch(`/generate/?totalAmount=${amount}&companyId=${companyRegNo}&storeId=${storeNo}`)
+        fetch(`/generate/?totalAmount=${amount}&companyId=${companyRegNo}&storeId=${storeNo}`)
             .then(response => response.json())
             .then(data => {
                 console.log(data);
@@ -259,7 +259,6 @@
                 // Response ирсний дараа input-уудыг хоосол
                 document.getElementById('totalAmount').value = '';
                 document.getElementById('companyReg').value = '';
-                document.getElementById('lottery').value = '1';
                 document.getElementById('storeId').value = '';
             })
             .catch(error => {
@@ -300,7 +299,7 @@
         const storeNo = document.getElementById('storeId').value;
 
         // Шууд линк үүсгээд Excel татна
-        window.location.href = `/export_excel/?amount=${amount}&gecompanyReg=${companyRegNo}&storeId=${storeNo}`;
+    window.location.href = `/export_excel/?amount=${amount}&companyReg=${companyRegNo}&storeId=${storeNo}`;
     });
 
 </script>

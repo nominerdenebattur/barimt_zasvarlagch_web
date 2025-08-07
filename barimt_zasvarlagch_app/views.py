@@ -24,7 +24,7 @@ def ebarimt_generate(request):
     amount = totalAmount
     cityTax = "0.00"
     #aldaa billType aa bas avtomataar avna
-    billType = "1"
+    billType = request.GET.get("billType", "1")
 
     data = {
         "stocks": [
@@ -80,9 +80,11 @@ def ebarimt_generate(request):
         response_json = response.json()
         bill_id = response_json.get("billId", "")
         sub_bill_id = response_json.get("subBillId", "")
+        lottery=response_json.get("lottery", "")
     except Exception:
         bill_id = ""
         sub_bill_id = ""
+        lottery = ""
         print("⚠️ Failed to parse JSON response")
 
 
@@ -94,7 +96,7 @@ def ebarimt_generate(request):
             #html-s importloh?
             lottery=lottery,
             totalAmount=totalAmount,
-            companyId=int(regNo),
+            companyReg=int(regNo),
             storeId=store
         )
         return JsonResponse({
