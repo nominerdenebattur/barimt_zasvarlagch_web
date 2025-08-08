@@ -174,10 +174,16 @@
                 <small>Байгууллага бол 3, хувь хүн бол 1</small>
                 <input type="text" name="companyFieldTypeInput" id="companyFieldTypeInput" value="1" readonly>
             </div>
+            <!-- Салбарын нэр хайх autocomplete -->
+            <div class="form-group">
+                <label>Салбарын нэр</label>
+                <input type="text" id="branchName" autocomplete="off" placeholder="Жишээ нь: Баруун">
+                <ul id="suggestions" style="list-style: none; padding: 0; margin: 5px 0 0 0; background: #fff; border: 1px solid #ccc; border-radius: 4px; max-height: 150px; overflow-y: auto;"></ul>
+            </div>
             <!-- Дэлгүүрийн дугаар -->
             <div class="form-group">
                 <label>Дэлгүүрийн дугаар</label>
-                <input type="text" name="storeId" id="storeId">
+                <input type="text" name="storeId" id="storeId" readonly>
             </div>
         </div>
 
@@ -216,6 +222,49 @@
             } else {
                 companyFieldTypeInput.value = 1; // huvi hun
             }
+        });
+        const branchInput = document.getElementById('branchName');
+        const suggestionList = document.getElementById('suggestions');
+        const storeIdInput = document.getElementById('storeId');
+
+        // Функц: хайлт хийх үед API-рүү хүсэлт явуулна
+        branchInput.addEventListener('input', function () {
+            const query = branchInput.value.trim();
+            if (query.length < 2) {
+                suggestionList.innerHTML = '';
+                return;
+            }
+
+            fetch('https://pp.cumongol.mn/api/list-biz/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ bizloc_nm: query })
+            })
+            .then(response => response.json())
+            .then(data => {
+                suggestionList.innerHTML = '';
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item.bizloc_nm;
+                        li.setAttribute('data-code', item.bizloc_cd);
+                        li.style.padding = '5px 10px';
+                        li.style.cursor = 'pointer';
+                        li.addEventListener('click', function () {
+                            branchInput.value = item.bizloc_nm;
+                            storeIdInput.value = item.bizloc_cd;
+                            suggestionList.innerHTML = '';
+                        });
+                        suggestionList.appendChild(li);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("API request error:", error);
+                suggestionList.innerHTML = '<li style="padding: 5px 10px; color: red;">Алдаа гарлаа</li>';
+            });
         });
         document.getElementById('generateBtn').addEventListener('click', function () {
             const amount = document.getElementById('totalAmount').value;

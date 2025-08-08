@@ -101,7 +101,7 @@ def ebarimt_generate(request):
             lottery=lottery,
             totalAmount=totalAmount,
             companyReg=company_reg_int,
-            storeId=store
+            storeNo=store
         )
         return JsonResponse({
             "status": "success",
