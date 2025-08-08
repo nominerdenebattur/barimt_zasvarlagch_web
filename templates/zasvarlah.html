@@ -78,14 +78,15 @@
         }
         .document-box {
             width: 100px;
-            height: 250px;
+            height: 600px;
             background: #e0e0e0;
             border-radius: 6px;
         }
         .submit-section {
             display: flex;
             justify-content: center;
-            margin-top: 40px;
+            margin-top: 20px;
+            margin-bottom: 40px;
         }
         .submit-section button {
             background: #ccc;
@@ -96,7 +97,7 @@
         }
         .document-box {
             width: 900px;
-            max-height: 250px;
+            max-height: 600px;
             background: #fff;
             border-radius: 8px;
             overflow: auto;
@@ -185,6 +186,18 @@
             <div class="document-header">
                 <h3>Баримт</h3>
                 <button id="exportBtn">Баримт татаж авах</button>
+
+                    <!-- Date Picker -->
+                    <form method="GET" class="mb-3">
+                        <div class="row g-2">
+                            <div class="col-auto">
+                                <label for="selected_date" class="form-label">Select Date:</label>
+                                <input type="date" name="selected_date" id="selected_date" class="form-control"
+                                       value="{{ selected_date }}">
+                            </div>
+                        </div>
+                    </form>
+
             </div>
             <div class="document-box"></div>
         </div>
@@ -237,26 +250,38 @@
             .then(response => response.json())
             .then(data => {
                 console.log(data);
-                document.querySelector('.document-box').innerHTML = `
-                    <table class="table" border="1" width="100%">
-                        <tr>
-                            <th>Нийт дүн</th>
-                            <th>Сугалааны дугаар</th>
-                            <th>Дэлгүүрийн дугаар</th>
-                            <th>subBillId</th>
-                            <th>billId</th>
-                            <th>Байгууллагын регистр</th>
-                        </tr>
-                        <tr>
-                            <td>${amount}</td>
-                            <td>${data.lottery || '-'}</td>
-                            <td>${storeNo}</td>
-                            <td>${data.subBillId || '-'}</td>
-                            <td>${data.billId || '-'}</td>
-                            <td>${companyRegNo || '-'}</td>
-                        </tr>
-                    </table>
+                let table = document.querySelector('.document-box table');
+                if (!table) {
+                    document.querySelector('.document-box').innerHTML = `
+                        <table class="table" border="1" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Нийт дүн</th>
+                                    <th>Сугалааны дугаар</th>
+                                    <th>Дэлгүүрийн дугаар</th>
+                                    <th>subBillId</th>
+                                    <th>billId</th>
+                                    <th>Байгууллагын регистр</th>
+                                </tr>
+
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    `;
+                    table = document.querySelector('.document-box table')
+                }
+                const tbody = table.querySelector('tbody');
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${amount}</td>
+                    <td>${data.lottery || '-'}</td>
+                    <td>${storeNo}</td>
+                    <td>${data.subBillId || '-'}</td>
+                    <td>${data.billId || '-'}</td>
+                    <td>${companyRegNo || '-'}</td>
                 `;
+                tbody.appendChild(newRow);
+
                 // Response ирсний дараа input-уудыг хоосол
                 document.getElementById('totalAmount').value = '';
                 document.getElementById('companyReg').value = '';
@@ -266,7 +291,7 @@
                 console.error('Error:', error);
                 alert("Алдаа гарлаа. Дахин оролдоно уу.");
             });
-                });
+        });
 
  /*
     // test: table ee harahiin tuld hiihed ashiglah table
@@ -293,14 +318,14 @@
     });
 
   */
-         // excel eer export hiih event
-    document.getElementById('exportBtn').addEventListener('click', function () {
-        const amount = document.getElementById('totalAmount').value;
-        const companyRegNo = document.getElementById('companyReg').value;
-        const storeNo = document.getElementById('storeId').value;
+        // excel eer export hiih event
+        document.getElementById('exportBtn').addEventListener('click', function () {
+            const amount = document.getElementById('totalAmount').value;
+            const companyRegNo = document.getElementById('companyReg').value;
+            const storeNo = document.getElementById('storeId').value;
 
-        // Шууд линк үүсгээд Excel татна
-    window.location.href = `/export_excel/?amount=${amount}&companyReg=${companyRegNo}&storeId=${storeNo}`;
+            // Шууд линк үүсгээд Excel татна
+        window.location.href = `/export_excel/?amount=${amount}&companyReg=${companyRegNo}&storeId=${storeNo}`;
     });
 
 </script>
