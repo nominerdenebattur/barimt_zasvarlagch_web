@@ -205,7 +205,36 @@
                     </form>
 
             </div>
-            <div class="document-box"></div>
+            <div class="document-box">
+                <table border="1" width="100%">
+                    <thead>
+                        <tr>
+                            <th>Bill ID</th>
+                            <th>Нийт дүн</th>
+                            <th>Дэлгүүр</th>
+                            <th>Reg</th>
+                            <th>Lottery</th>
+                            <th>Огноо</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for barimt in barimtuud %}
+                        <tr>
+                            <td>{{ barimt.billId }}</td>
+                            <td>{{ barimt.totalAmount }}</td>
+                            <td>{{ barimt.storeName }}</td>
+                            <td>{{ barimt.companyReg }}</td>
+                            <td>{{ barimt.lottery }}</td>
+                            <td>{{ barimt.created }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6">Одоогоор баримт байхгүй байна.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 
@@ -304,35 +333,17 @@
             .then(response => response.json())
             .then(data => {
                 console.log(data);
-                let table = document.querySelector('.document-box table');
-                if (!table) {
-                    document.querySelector('.document-box').innerHTML = `
-                        <table class="table" border="1" width="100%">
-                            <thead>
-                                <tr>
-                                    <th>Нийт дүн</th>
-                                    <th>Сугалааны дугаар</th>
-                                    <th>Дэлгүүрийн дугаар</th>
-                                    <th>subBillId</th>
-                                    <th>billId</th>
-                                    <th>Байгууллагын регистр</th>
-                                </tr>
-
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    `;
-                    table = document.querySelector('.document-box table')
-                }
+                const table = document.querySelector('.document-box table');
                 const tbody = table.querySelector('tbody');
                 const newRow = document.createElement('tr');
+
                 newRow.innerHTML = `
-                    <td>${amount}</td>
-                    <td>${data.lottery || '-'}</td>
-                    <td>${storeNo}</td>
-                    <td>${data.subBillId || '-'}</td>
                     <td>${data.billId || '-'}</td>
+                    <td>${amount}</td>
+                    <td>${storeNo}</td>
                     <td>${companyRegNo || '-'}</td>
+                    <td>${data.lottery || '-'}</td>
+                    <td>${data.created || '-'}</td>
                 `;
                 tbody.appendChild(newRow);
 

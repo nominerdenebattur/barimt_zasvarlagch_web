@@ -9,8 +9,9 @@ from .models import Barimt
 
 
 def zasvarlah(request):
-    return render(request, 'zasvarlah.html')
-
+        # Өмнөх өгөгдлүүдийг харуулах (хамгийн сүүлийн 20 баримтыг харуулж болно)
+        barimtuud = Barimt.objects.all().order_by('-created')[:20]
+        return render(request, 'zasvarlah.html', {'barimtuud': barimtuud})
 
 def ebarimt_generate(request):
     # === Input Data ===
