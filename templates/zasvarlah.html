@@ -281,6 +281,10 @@
                 alert("Дэлгүүрийн дугаар оруулна уу.");
                 return;
             }
+            if (branchName === '') {
+                alert("Дэлгүүрийн дугаар оруулна уу.");
+                return;
+            }
             if (confirm(
                 `Баримт үүсгэхэд итгэлтэй байна уу?\n
                 Нийт дүн: ${amount}\n
@@ -294,6 +298,7 @@
         document.getElementById('companyReg').value = '';
         document.getElementById('companyFieldTypeInput').value = '1';  // Байгууллага эсэхийг автоматаар тохируулах
         document.getElementById('storeId').value = '';
+        document.getElementById('branchName').value = '';
 
         fetch(`/generate/?totalAmount=${amount}&companyId=${companyRegNo}&storeId=${storeNo}&companyFieldTypeInput=${receiptType}`)
             .then(response => response.json())

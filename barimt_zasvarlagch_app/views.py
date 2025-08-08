@@ -142,7 +142,7 @@ def export_excel(request):
             "Сугалааны дугаар": obj.lottery,
             "billId": obj.billId,
             "subBillId": obj.subBillId,
-            "Дэлгүүрийн дугаар": obj.storeId,
+            "Дэлгүүрийн дугаар": obj.storeNo,
             "Байгууллагын регистр": obj.companyReg,
             "Огноо": obj.created.strftime('%Y-%m-%d %H:%M:%S')
         })
