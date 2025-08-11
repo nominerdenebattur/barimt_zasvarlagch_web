@@ -8,10 +8,31 @@ from django.utils.datetime_safe import datetime
 from .models import Barimt
 
 
+from datetime import datetime, timedelta
+
 def zasvarlah(request):
-        # Өмнөх өгөгдлүүдийг харуулах (хамгийн сүүлийн 20 баримтыг харуулж болно)
-        barimtuud = Barimt.objects.all().order_by('-created')[:20]
-        return render(request, 'zasvarlah.html', {'barimtuud': barimtuud})
+    selected_date = request.GET.get('selected_date')
+    barimtuud = Barimt.objects.all().order_by('-created')
+
+    if selected_date:
+        try:
+            # selected_date-г datetime.date болгож хөрвүүлэх
+            date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
+
+            # Өдрийн эхлэл ба дараагийн өдрийн эхлэл
+            start_datetime = datetime.combine(date_obj, datetime.min.time())
+            end_datetime = start_datetime + timedelta(days=1)
+
+            # Огноо, цагийн хүрээнд шүүх
+            barimtuud = barimtuud.filter(created__gte=start_datetime, created__lt=end_datetime)
+        except ValueError:
+            pass
+
+    return render(request, 'zasvarlah.html', {
+        'barimtuud': barimtuud,
+        'selected_date': selected_date
+    })
+
 
 def ebarimt_generate(request):
     # === Input Data ===
@@ -65,9 +86,9 @@ def ebarimt_generate(request):
         "amountTenderedCoupon": "0.00"
     }
 
-    store_param = f"{store}put"
     store_str = str(store).lstrip('0') or '0'
     store_num = int(store_str)
+    store_param = store_str
 
     if store_num > 450:
         url = f"http://10.10.90.234/23/api/?store={store_param}"

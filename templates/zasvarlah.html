@@ -191,24 +191,23 @@
         <div class="document-section">
             <div class="document-header">
                 <h3>Баримт</h3>
-                <button id="exportBtn">Баримт татаж авах</button>
 
                     <!-- Date Picker -->
-                    <form method="GET" class="mb-3">
-                        <div class="row g-2">
-                            <div class="col-auto">
-                                <label for="selected_date" class="form-label">Select Date:</label>
-                                <input type="date" name="selected_date" id="selected_date" class="form-control"
-                                       value="{{ selected_date }}">
-                            </div>
-                        </div>
-                    </form>
-
+                    <div class="document-header">
+                        <form method="GET" action="">
+                            <label for="selected_date" class="form-label">Select Date:</label>
+                            <input type="date" name="selected_date" id="selected_date"
+                                   value="{{ selected_date|default:'' }}">
+                            <button type="submit">Шүүх</button>
+                        </form>
+                    </div>
+                <button id="exportBtn">Баримт татаж авах</button>
             </div>
             <div class="document-box">
                 <table border="1" width="100%">
                     <thead>
                         <tr>
+                            <th>№</th>
                             <th>Bill ID</th>
                             <th>Нийт дүн</th>
                             <th>Дэлгүүр</th>
@@ -220,6 +219,7 @@
                     <tbody>
                         {% for barimt in barimtuud %}
                         <tr>
+                            <td>{{ forloop.counter }}</td>
                             <td>{{ barimt.billId }}</td>
                             <td>{{ barimt.totalAmount }}</td>
                             <td>{{ barimt.storeName }}</td>
@@ -322,12 +322,12 @@
             } else {
                 alert("Та мэдээллээ шалгаад дахин оролдоно уу.");
             }
-                    // Орлуулсан талбаруудыг хоослох
-        document.getElementById('totalAmount').value = '';
-        document.getElementById('companyReg').value = '';
-        document.getElementById('companyFieldTypeInput').value = '1';  // Байгууллага эсэхийг автоматаар тохируулах
-        document.getElementById('storeId').value = '';
-        document.getElementById('branchName').value = '';
+            // Орлуулсан талбаруудыг хоослох
+            document.getElementById('totalAmount').value = '';
+            document.getElementById('companyReg').value = '';
+            document.getElementById('companyFieldTypeInput').value = '1';  // Байгууллага эсэхийг автоматаар тохируулах
+            document.getElementById('storeId').value = '';
+            document.getElementById('branchName').value = '';
 
         fetch(`/generate/?totalAmount=${amount}&companyId=${companyRegNo}&storeId=${storeNo}&companyFieldTypeInput=${receiptType}`)
             .then(response => response.json())
@@ -335,9 +335,10 @@
                 console.log(data);
                 const table = document.querySelector('.document-box table');
                 const tbody = table.querySelector('tbody');
-                const newRow = document.createElement('tr');
 
+                const newRow = document.createElement('tr');
                 newRow.innerHTML = `
+                    <td>${tbody.children.length + 1}</td>
                     <td>${data.billId || '-'}</td>
                     <td>${amount}</td>
                     <td>${storeNo}</td>
