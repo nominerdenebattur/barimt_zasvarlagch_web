@@ -1,399 +1,402 @@
 <!DOCTYPE html>
 <html lang="mn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Баримт Засварлагч</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            background: #fdfdfd;
-        }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #666;
-            color: white;
-            padding: 10px 30px;
-        }
-        header .logo {
-            font-weight: bold;
-        }
-        header nav button {
-            margin-left: 10px;
-            background: #bbb;
-            border: none;
-            padding: 6px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        main {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            gap: 50px;
-            padding: 100px 20px;
-        }
-        .form-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .form-group label {
-            font-weight: bold;
-        }
-        .form-group small {
-            color: gray;
-            font-size: 12px;
-        }
-        .form-group input {
-            width: 250px;
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-        .document-section {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .document-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .document-header button {
-            background: #ccc;
-            border: none;
-            padding: 5px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .document-box {
-            width: 100px;
-            height: 600px;
-            background: #e0e0e0;
-            border-radius: 6px;
-        }
-        .submit-section {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-            margin-bottom: 40px;
-        }
-        .submit-section button {
-            background: #ccc;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .document-box {
-            width: 900px;
-            max-height: 600px;
-            background: #fff;
-            border-radius: 8px;
-            overflow: auto;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            padding: 5px;
-        }
-
-        .document-box table {
-            width: 100%;
-            border-collapse: collapse;
-            font-family: Arial, sans-serif;
-        }
-
-        .document-box th {
-            background: #2a9df4;
-            color: white;
-            padding: 10px;
-            text-align: left;
-        }
-
-        .document-box td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .document-box tr:hover {
-            background: #f2f2f2;
-        }
-
-        .submit-section button,
-        .document-header button {
-            background: #2a9df4;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .submit-section button:hover,
-        .document-header button:hover {
-            background: #2a9df4;
-        }
-
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Баримт Засварлагч</title>
+  <style>
+    :root {
+      --brand: #2a9df4;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --bg: #f9fafb;
+      --card: #ffffff;
+      --border: #e5e7eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #374151;
+      color: white;
+      padding: 10px 20px;
+    }
+    header .logo { font-weight: bold; }
+    header nav { display: flex; gap: 8px; }
+    header nav button,
+    .btn {
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    header nav button:hover,
+    .btn:hover { opacity: .95; }
+    main {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      padding: 24px;
+      align-items: start;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,.04);
+    }
+    .form-section {
+      padding: 16px;
+      position: sticky;
+      top: 16px;
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .form-group small { color: var(--muted); }
+    .form-group input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      outline: none;
+    }
+    .form-group input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(42,157,244,.15);
+    }
+    .document-section { padding: 16px; }
+    .document-header {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .document-header .left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .doc-title { margin: 0; }
+    .date-filter {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .date-filter input[type="date"] {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      outline: none;
+    }
+    .document-box {
+      width: 100%;
+      max-height: 70vh;
+      overflow: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: Arial, sans-serif;
+    }
+    thead th {
+      position: sticky;
+      top: 0;
+      background: var(--brand);
+      color: #fff;
+      text-align: left;
+      padding: 10px;
+      z-index: 1;
+    }
+    tbody td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+    }
+    tbody tr:hover { background: #f3f4f6; }
+    .submit-section {
+      display: flex;
+      justify-content: center;
+      padding: 20px 24px 40px;
+    }
+    /* Autocomplete list */
+    #suggestions {
+      list-style: none;
+      padding: 0;
+      margin: 6px 0 0 0;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    #suggestions li {
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    #suggestions li:hover { background: #f3f4f6; }
+    /* Helper chips */
+    .helper {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <div class="logo">Лого1 | Лого2</div>
-        <nav>
-            <button>Засварлах</button>
-            <button>Хянах</button>
-            <button>Тайлан</button>
-        </nav>
-    </header>
+<header>
+  <div class="logo">Лого1 | Лого2</div>
+  <nav>
+    <button type="button">Засварлах</button>
+    <button type="button">Хянах</button>
+    <button type="button">Тайлан</button>
+  </nav>
+</header>
 
-    <main>
-        <!-- Баримтын мэдээлэл -->
-        <div class="form-section">
-            <div class="form-group">
-                <label>Нийт дүн</label>
-                <input type="text" name="totalAmount" id="totalAmount">
-            </div>
-            <!-- Байгууллагын регистер -->
-            <div class="form-group">
-                <label>Байгууллагын регистерийн дугаар</label>
-                <small>Байгууллага биш бол хоосон үлдээнэ үү!</small>
-                <input type="text" name="companyReg" id="companyReg">
-            </div>
-            <!-- Баримтын төрөл -->
-            <div class="form-group">
-                <label>Баримтын төрөл</label>
-                <small>Байгууллага бол 3, хувь хүн бол 1</small>
-                <input type="text" name="companyFieldTypeInput" id="companyFieldTypeInput" value="1" readonly>
-            </div>
-            <!-- Салбарын нэр хайх autocomplete -->
-            <div class="form-group">
-                <label>Салбарын нэр</label>
-                <input type="text" id="branchName" autocomplete="off" placeholder="Жишээ нь: Баруун">
-                <ul id="suggestions" style="list-style: none; padding: 0; margin: 5px 0 0 0; background: #fff; border: 1px solid #ccc; border-radius: 4px; max-height: 150px; overflow-y: auto;"></ul>
-            </div>
-            <!-- Дэлгүүрийн дугаар -->
-            <div class="form-group">
-                <label>Дэлгүүрийн дугаар</label>
-                <input type="text" name="storeId" id="storeId" readonly>
-            </div>
-        </div>
-
-        <!-- Баримт талбар -->
-        <div class="document-section">
-            <div class="document-header">
-                <h3>Баримт</h3>
-
-                    <!-- Date Picker -->
-                    <div class="document-header">
-                        <form method="GET" action="">
-                            <label for="selected_date" class="form-label">Select Date:</label>
-                            <input type="date" name="selected_date" id="selected_date"
-                                   value="{{ selected_date|default:'' }}">
-                            <button type="submit">Шүүх</button>
-                        </form>
-                    </div>
-                <button id="exportBtn">Баримт татаж авах</button>
-            </div>
-            <div class="document-box">
-                <table border="1" width="100%">
-                    <thead>
-                        <tr>
-                            <th>№</th>
-                            <th>Bill ID</th>
-                            <th>Нийт дүн</th>
-                            <th>Дэлгүүр</th>
-                            <th>Reg</th>
-                            <th>Lottery</th>
-                            <th>Огноо</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for barimt in barimtuud %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ barimt.billId }}</td>
-                            <td>{{ barimt.totalAmount }}</td>
-                            <td>{{ barimt.storeName }}</td>
-                            <td>{{ barimt.companyReg }}</td>
-                            <td>{{ barimt.lottery }}</td>
-                            <td>{{ barimt.created }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6">Одоогоор баримт байхгүй байна.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-
-    <div class="submit-section">
-        <button id="generateBtn">Баримт үүсгэх</button>
+<main>
+  <!-- Баримтын мэдээлэл -->
+  <section class="form-section card">
+    <div class="form-group">
+      <label for="totalAmount">Нийт дүн</label>
+      <input type="text" name="totalAmount" id="totalAmount" placeholder="Ж: 10000.00">
     </div>
+
+    <div class="form-group">
+      <label for="companyReg">Байгууллагын регистерийн дугаар</label>
+      <small class="helper">Байгууллага биш бол хоосон үлдээнэ үү!</small>
+      <input type="text" name="companyReg" id="companyReg" placeholder="Ж: 1234567">
+    </div>
+
+    <div class="form-group">
+      <label for="companyFieldTypeInput">Баримтын төрөл</label>
+      <small class="helper">Байгууллага бол 3, хувь хүн бол 1</small>
+      <input type="text" name="companyFieldTypeInput" id="companyFieldTypeInput" value="1" readonly>
+    </div>
+
+    <div class="form-group" style="position:relative;">
+      <label for="branchName">Салбарын нэр</label>
+      <input type="text" id="branchName" autocomplete="off" placeholder="Жишээ: Баруун">
+      <ul id="suggestions"></ul>
+    </div>
+
+    <div class="form-group">
+      <label for="storeId">Дэлгүүрийн дугаар</label>
+      <input type="text" name="storeId" id="storeId" readonly placeholder="Салбар сонгоход автоматаар бөглөгдөнө">
+    </div>
+
+    <div class="helper">Санамж: Салбарын нэр дээр дарвал дэлгүүрийн дугаар бөглөгдөнө.</div>
+  </section>
+
+  <!-- Баримтын жагсаалт -->
+  <section class="document-section card">
+    <div class="document-header">
+      <div class="left">
+        <h3 class="doc-title">Баримт</h3>
+        <form method="GET" action="" class="date-filter">
+          <label for="selected_date">Огноо:</label>
+          <input type="date" name="selected_date" id="selected_date" value="{{ selected_date|default:'' }}">
+          <button type="submit" class="btn">Шүүх</button>
+        </form>
+      </div>
+      <div class="right">
+        <button id="exportBtn" class="btn" type="button">Баримт татаж авах</button>
+      </div>
+    </div>
+
+    <div class="document-box">
+      <table>
+        <thead>
+        <tr>
+          <th>№</th>
+          <th>Bill ID</th>
+          <th>Нийт дүн</th>
+          <th>Дэлгүүр</th>
+          <th>Reg</th>
+          <th>Lottery</th>
+          <th>Огноо</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for barimt in barimtuud %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ barimt.billId }}</td>
+            <td>{{ barimt.totalAmount }}</td>
+            <td>{{ barimt.storeNo }}</td>
+            <td>{{ barimt.companyReg }}</td>
+            <td>{{ barimt.lottery }}</td>
+            <td>{{ barimt.created }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7">Одоогоор баримт байхгүй байна.</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div class="submit-section">
+  <button id="generateBtn" class="btn" type="button">Баримт үүсгэх</button>
+</div>
+
 <script>
-        document.getElementById('companyReg').addEventListener('input', function () {
-            const companyFieldInput = this.value.trim();
-            const companyFieldTypeInput = document.getElementById('companyFieldTypeInput');
+  // Автоматаар баримтын төрөл солих (companyReg бөглөгдвөл 3, хоосон бол 1)
+  document.getElementById('companyReg').addEventListener('input', function () {
+    const hasReg = this.value.trim().length > 0;
+    document.getElementById('companyFieldTypeInput').value = hasReg ? '3' : '1';
+  });
 
-            if (companyFieldInput !== "") {
-                companyFieldTypeInput.value = 3; // baiguullaga
-            } else {
-                companyFieldTypeInput.value = 1; // huvi hun
-            }
-        });
-        const branchInput = document.getElementById('branchName');
-        const suggestionList = document.getElementById('suggestions');
-        const storeIdInput = document.getElementById('storeId');
+  // ====== Салбар хайлт (autocomplete) ======
+  const branchInput = document.getElementById('branchName');
+  const suggestionList = document.getElementById('suggestions');
+  const storeIdInput = document.getElementById('storeId');
 
-        // Функц: хайлт хийх үед API-рүү хүсэлт явуулна
-        branchInput.addEventListener('input', function () {
-            const query = branchInput.value.trim();
-            if (query.length < 2) {
-                suggestionList.innerHTML = '';
-                return;
-            }
+  // Debounce helper
+  let debounceTimer = null;
+  function debounce(fn, delay) {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(fn, delay);
+  }
 
-            fetch('https://pp.cumongol.mn/api/list-biz/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ bizloc_nm: query })
-            })
-            .then(response => response.json())
-            .then(data => {
-                suggestionList.innerHTML = '';
-                if (data.results && data.results.length > 0) {
-                    data.results.forEach(item => {
-                        const li = document.createElement('li');
-                        li.textContent = item.bizloc_nm;
-                        li.setAttribute('data-code', item.bizloc_cd);
-                        li.style.padding = '5px 10px';
-                        li.style.cursor = 'pointer';
-                        li.addEventListener('click', function () {
-                            branchInput.value = item.bizloc_nm;
-                            storeIdInput.value = item.bizloc_cd;
-                            suggestionList.innerHTML = '';
-                        });
-                        suggestionList.appendChild(li);
-                    });
-                }
-            })
-            .catch(error => {
-                console.error("API request error:", error);
-                suggestionList.innerHTML = '<li style="padding: 5px 10px; color: red;">Алдаа гарлаа</li>';
+  branchInput.addEventListener('input', function () {
+    const q = branchInput.value.trim();
+    if (q.length < 2) {
+      suggestionList.innerHTML = '';
+      return;
+    }
+    debounce(() => {
+      fetch('https://pp.cumongol.mn/api/list-biz/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bizloc_nm: q })
+      })
+        .then(r => r.json())
+        .then(data => {
+          suggestionList.innerHTML = '';
+          const results = (data && data.results) ? data.results : [];
+          if (!results.length) return;
+
+          results.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = `${item.bizloc_nm}  —  ${item.bizloc_cd}`;
+            li.dataset.code = item.bizloc_cd;
+            li.addEventListener('click', () => {
+              branchInput.value = item.bizloc_nm;
+              storeIdInput.value = item.bizloc_cd;
+              suggestionList.innerHTML = '';
             });
+            suggestionList.appendChild(li);
+          });
+        })
+        .catch(err => {
+          console.error('API request error:', err);
+          suggestionList.innerHTML = '<li style="color:red;">Алдаа гарлаа</li>';
         });
-        document.getElementById('generateBtn').addEventListener('click', function () {
-            const amount = document.getElementById('totalAmount').value;
-            const companyRegNo = document.getElementById('companyReg').value;
-            const storeNo = document.getElementById('storeId').value;
-            const receiptType = document.getElementById('companyFieldTypeInput').value;
+    }, 300);
+  });
 
-            // Zaaval bugluh talbaruudiig shalgah
-            if (amount === '') {
-                alert("Нийт дүн оруулна уу.");
-                return; // Үргэлжлүүлэхгүй
-            }
-            if (storeNo === '') {
-                alert("Дэлгүүрийн дугаар оруулна уу.");
-                return;
-            }
-            if (branchName === '') {
-                alert("Дэлгүүрийн дугаар оруулна уу.");
-                return;
-            }
-            if (confirm(
-                `Баримт үүсгэхэд итгэлтэй байна уу?\n
-                Нийт дүн: ${amount}\n
-                Байгууллагын регистр: ${companyRegNo}`
-            )) {
-            } else {
-                alert("Та мэдээллээ шалгаад дахин оролдоно уу.");
-            }
-            // Орлуулсан талбаруудыг хоослох
-            document.getElementById('totalAmount').value = '';
-            document.getElementById('companyReg').value = '';
-            document.getElementById('companyFieldTypeInput').value = '1';  // Байгууллага эсэхийг автоматаар тохируулах
-            document.getElementById('storeId').value = '';
-            document.getElementById('branchName').value = '';
+  // Click outside to close suggestions
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#suggestions') && e.target !== branchInput) {
+      suggestionList.innerHTML = '';
+    }
+  });
 
-        fetch(`/generate/?totalAmount=${amount}&companyId=${companyRegNo}&storeId=${storeNo}&companyFieldTypeInput=${receiptType}`)
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                const table = document.querySelector('.document-box table');
-                const tbody = table.querySelector('tbody');
+  // ====== Баримт үүсгэх ======
+  document.getElementById('generateBtn').addEventListener('click', function () {
+    const amount = document.getElementById('totalAmount').value.trim();
+    const companyRegNo = document.getElementById('companyReg').value.trim();
+    const storeNo = document.getElementById('storeId').value.trim();
+    const receiptType = document.getElementById('companyFieldTypeInput').value.trim();
+    const branchNameVal = branchInput.value.trim();
 
-                const newRow = document.createElement('tr');
-                newRow.innerHTML = `
-                    <td>${tbody.children.length + 1}</td>
-                    <td>${data.billId || '-'}</td>
-                    <td>${amount}</td>
-                    <td>${storeNo}</td>
-                    <td>${companyRegNo || '-'}</td>
-                    <td>${data.lottery || '-'}</td>
-                    <td>${data.created || '-'}</td>
-                `;
-                tbody.appendChild(newRow);
+    if (!amount) { alert("Нийт дүн оруулна уу."); return; }
+    if (!storeNo) { alert("Дэлгүүрийн дугаар оруулна уу."); return; }
+    if (!branchNameVal) { alert("Салбарын нэрээ сонгоно уу."); return; }
 
-                // Response ирсний дараа input-уудыг хоосол
-                document.getElementById('totalAmount').value = '';
-                document.getElementById('companyReg').value = '';
-                document.getElementById('storeId').value = '';
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("Алдаа гарлаа. Дахин оролдоно уу.");
-            });
-        });
+    if (!confirm(`Баримт үүсгэхэд итгэлтэй байна уу?\nНийт дүн: ${amount}\nБайгууллагын регистр: ${companyRegNo || '-'}`)) {
+      alert("Та мэдээллээ шалгаад дахин оролдоно уу.");
+      return;
+    }
 
- /*
-    // test: table ee harahiin tuld hiihed ashiglah table
-        document.querySelector('.document-box').innerHTML = `
-            <table class="table" border="1" width="100%">
-                <tr>
-                    <th>Нийт дүн</th>
-                    <th>Сугалааны дугаар</th>
-                    <th>billId</th>
-                    <th>subBillId</th>
-                    <th>Дэлгүүрийн дугаар</th>
-                    <th>Байгууллагын регистр</th>
-                </tr>
-                <tr>
-                    <td>${amount}</td>
-                    <td>TEST12345</td>
-                    <td>BILL001</td>
-                    <td>SUB001</td>
-                    <td>${storeNo}</td>
-                    <td>${companyRegNo || 'null'}</td>
-                </tr>
-            </table>
+    const qs = new URLSearchParams({
+      totalAmount: amount,
+      companyId: companyRegNo,
+      storeId: storeNo,
+      companyFieldTypeInput: receiptType
+    }).toString();
+
+    fetch(`/generate/?${qs}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.status !== 'success') {
+          console.error('Generate error:', data);
+          throw new Error(data.message || 'API error');
+        }
+
+        const tbody = document.querySelector('.document-box table tbody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${tbody.children.length + 1}</td>
+          <td>${data.billId || '-'}</td>
+          <td>${amount}</td>
+          <td>${storeNo}</td>
+          <td>${companyRegNo || '-'}</td>
+          <td>${data.lottery || '-'}</td>
+          <td>${data.created || '-'}</td>
         `;
-    });
+        tbody.appendChild(tr);
 
-  */
-        // excel eer export hiih event
-        document.getElementById('exportBtn').addEventListener('click', function () {
-            const amount = document.getElementById('totalAmount').value;
-            const companyRegNo = document.getElementById('companyReg').value;
-            const storeNo = document.getElementById('storeId').value;
+        // Амжилттай болсны дараа талбаруудыг хоослох
+        document.getElementById('totalAmount').value = '';
+        document.getElementById('companyReg').value = '';
+        document.getElementById('companyFieldTypeInput').value = '1';
+        document.getElementById('storeId').value = '';
+        branchInput.value = '';
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        alert("Алдаа гарлаа. Дахин оролдоно уу.");
+      });
+  });
 
-            // Шууд линк үүсгээд Excel татна
-        window.location.href = `/export_excel/?amount=${amount}&companyReg=${companyRegNo}&storeId=${storeNo}`;
-    });
+  // ====== Excel татах ======
+  document.getElementById('exportBtn').addEventListener('click', function () {
+    const amount = document.getElementById('totalAmount').value.trim();
+    const companyRegNo = document.getElementById('companyReg').value.trim();
+    const storeNo = document.getElementById('storeId').value.trim();
 
+    const qs = new URLSearchParams({
+      amount: amount,
+      companyReg: companyRegNo,
+      storeId: storeNo
+    }).toString();
+
+    window.location.href = `/export_excel/?${qs}`;
+  });
 </script>
 </body>
 </html>

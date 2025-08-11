@@ -91,9 +91,9 @@ def ebarimt_generate(request):
     store_param = store_str
 
     if store_num > 450:
-        url = f"http://10.10.90.234/23/api/?store={store_param}"
+        url = f"http://10.10.90.234/23/api/?store={store_param}put"
     else:
-        url = f"http://10.10.90.233/23/api/?store={store_param}"
+        url = f"http://10.10.90.233/23/api/?store={store_param}put"
 
     headers = {"Content-Type": "application/json"}
     response = requests.post(url, headers=headers, data=json.dumps(data))
