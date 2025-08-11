@@ -109,11 +109,13 @@ def ebarimt_generate(request):
         sub_bill_id = response_json.get("subBillId", "")
         lottery = response_json.get("lottery", "")
         print(f"Reponse json: {response_json}")
-    except Exception:
+    except Exception as e:
+        print("⚠️ Failed to parse JSON response")
+        print("Response text:", response.text)
+        print("Error:", e)
         bill_id = ""
         sub_bill_id = ""
         lottery = ""
-        print("⚠️ Failed to parse JSON response")
 
     # hervee status code 200 buyu amjilttai bolvol database-d hadgalna
     if response.status_code == 200:
@@ -132,6 +134,7 @@ def ebarimt_generate(request):
             "lottery": lottery,
             "id": obj.id
         })
+
     else:
         return JsonResponse({"status": "failed", "message": "API call unsuccessful"}, status=500)
 
