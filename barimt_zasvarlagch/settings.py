@@ -27,7 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+LOGIN_REDIRECT_URL = 'zasvarlah'  # Redirects to home page after login
+LOGOUT_REDIRECT_URL = '/'  # Redirects to home page after logout
 # Application definition
 
 INSTALLED_APPS = [

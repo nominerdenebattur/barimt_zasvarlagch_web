@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Нэвтрэх</title>
+  <style>
+    :root {
+      --brand: #2a9df4;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --bg: #f9fafb;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --error: #ef4444;
+      --success: #22c55e;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 16px;
+    }
+    .login-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,.05);
+      width: 320px;
+      padding: 24px 28px;
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 24px;
+      color: var(--brand);
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      margin-bottom: 18px;
+      outline: none;
+      font-size: 14px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(42,157,244,0.15);
+    }
+    button {
+      width: 100%;
+      background: var(--brand);
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      padding: 12px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background: #1c7ed6;
+    }
+    .message {
+      margin-top: 16px;
+      font-size: 14px;
+      text-align: center;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: none;
+    }
+    .message.error {
+      color: var(--error);
+      background: #fee2e2;
+      border: 1px solid var(--error);
+      display: block;
+    }
+    .message.success {
+      color: var(--success);
+      background: #dcfce7;
+      border: 1px solid var(--success);
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <h2>Нэвтрэх</h2>
+    <form id="loginForm" method="POST" action="{% url 'login' %}">
+      {% csrf_token %}
+      <label for="username">Хэрэглэгчийн нэр эсвэл И-мэйл</label>
+      <input type="text" id="username" name="username" placeholder="Хэрэглэгчийн нэр эсвэл И-мэйл" required />
+
+      <label for="password">Нууц үг</label>
+      <input type="password" id="password" name="password" placeholder="Нууц үг" required />
+
+      <button type="submit">Нэвтрэх</button>
+    </form>
+      {% if error %}
+        <div class="message error">{{ error }}</div>
+      {% endif %}
+
+    <div id="message" class="message"></div>
+  </div>
+  </script>
+</body>
+</html>

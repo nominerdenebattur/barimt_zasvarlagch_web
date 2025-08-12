@@ -1,55 +1,16 @@
-<!DOCTYPE html>
-<html lang="mn">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Баримт Засварлагч</title>
-  <style>
-    :root {
-      --brand: #2a9df4;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --bg: #f9fafb;
-      --card: #ffffff;
-      --border: #e5e7eb;
-    }
-    * { box-sizing: border-box; }
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      color: var(--text);
-      background: var(--bg);
-    }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #374151;
-      color: white;
-      padding: 10px 20px;
-    }
-    header .logo { font-weight: bold; }
-    header nav { display: flex; gap: 8px; }
-    header nav button,
-    .btn {
-      background: var(--brand);
-      color: #fff;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    header nav button:hover,
-    .btn:hover { opacity: .95; }
-    main {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 24px;
-      padding: 24px;
-      align-items: start;
-    }
-    .card {
+{% extends 'base.html' %}
+
+{% block title %}Баримт Засварлагч{% endblock %}
+
+{% block extra_head %}
+<style>
+  main {
+    display: grid;
+    grid-template-columns: 3200px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 10px;
@@ -66,7 +27,7 @@
       font-weight: 700;
       margin-bottom: 6px;
     }
-    .form-group small { color: var(--muted); }
+.form-group small { color: var(--muted); }
     .form-group input {
       width: 100%;
       padding: 10px 12px;
@@ -79,7 +40,7 @@
       border-color: var(--brand);
       box-shadow: 0 0 0 3px rgba(42,157,244,.15);
     }
-    .document-section { padding: 16px; }
+.document-section { padding: 16px; }
     .document-header {
       display: flex;
       gap: 12px;
@@ -161,25 +122,32 @@
       color: var(--muted);
       margin-top: 6px;
     }
-  </style>
-</head>
-<body>
-<header>
-  <div class="logo">Лого1 | Лого2</div>
-  <nav>
-    <button type="button">Засварлах</button>
-    <button type="button">Хянах</button>
-    <button type="button">Тайлан</button>
-  </nav>
-</header>
+  /* Responsive */
+  @media (max-width: 900px) {
+    main {
+      grid-template-columns: 1fr;
+      padding: 20px 16px;
+    }
+    .form-grid {
+      max-height: none;
+      position: static;
+      grid-template-columns: 1fr;
+    }
+    .submit-section .btn {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
 
+{% block content %}
 <main>
   <!-- Баримтын мэдээлэл -->
   <section class="form-section card">
-    <div class="form-group">
-      <label for="totalAmount">Нийт дүн</label>
-      <input type="text" name="totalAmount" id="totalAmount" placeholder="Ж: 10000.00">
-    </div>
+      <div class="form-group">
+          <label for="totalAmount">Нийт дүн</label>
+          <input type="text" name="totalAmount" id="totalAmount" placeholder="Ж: 10000.00">
+        </div>
 
     <div class="form-group">
       <label for="companyReg">Байгууллагын регистерийн дугаар</label>
@@ -193,9 +161,9 @@
       <input type="text" name="companyFieldTypeInput" id="companyFieldTypeInput" value="1" readonly>
     </div>
 
-    <div class="form-group" style="position:relative;">
+    <div class="form-group" style="position: relative;">
       <label for="branchName">Салбарын нэр</label>
-      <input type="text" id="branchName" autocomplete="off" placeholder="Жишээ: Баруун">
+      <input type="text" id="branchName" autocomplete="off" placeholder="Жишээ: Баруун" >
       <ul id="suggestions"></ul>
     </div>
 
@@ -208,13 +176,13 @@
   </section>
 
   <!-- Баримтын жагсаалт -->
-  <section class="document-section card">
+  <section class="document-section card" >
     <div class="document-header">
       <div class="left">
         <h3 class="doc-title">Баримт</h3>
         <form method="GET" action="" class="date-filter">
           <label for="selected_date">Огноо:</label>
-          <input type="date" name="selected_date" id="selected_date" value="{{ selected_date|default:'' }}">
+          <input type="date" name="selected_date" id="selected_date" value="{{ selected_date|default:'' }}" >
           <button type="submit" class="btn">Шүүх</button>
         </form>
       </div>
@@ -226,32 +194,32 @@
     <div class="document-box">
       <table>
         <thead>
-        <tr>
-          <th>№</th>
-          <th>Bill ID</th>
-          <th>Нийт дүн</th>
-          <th>Дэлгүүр</th>
-          <th>Reg</th>
-          <th>Lottery</th>
-          <th>Огноо</th>
-        </tr>
+          <tr>
+            <th scope="col">№</th>
+            <th scope="col">Bill ID</th>
+            <th scope="col">Нийт дүн</th>
+            <th scope="col">Дэлгүүр</th>
+            <th scope="col">Reg</th>
+            <th scope="col">Lottery</th>
+            <th scope="col">Огноо</th>
+          </tr>
         </thead>
         <tbody>
-        {% for barimt in barimtuud %}
-          <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>{{ barimt.billId }}</td>
-            <td>{{ barimt.totalAmount }}</td>
-            <td>{{ barimt.storeNo }}</td>
-            <td>{{ barimt.companyReg }}</td>
-            <td>{{ barimt.lottery }}</td>
-            <td>{{ barimt.created }}</td>
-          </tr>
-        {% empty %}
-          <tr>
-            <td colspan="7">Одоогоор баримт байхгүй байна.</td>
-          </tr>
-        {% endfor %}
+          {% for barimt in barimtuud %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ barimt.billId }}</td>
+              <td>{{ barimt.totalAmount }}</td>
+              <td>{{ barimt.storeNo }}</td>
+              <td>{{ barimt.companyReg }}</td>
+              <td>{{ barimt.lottery }}</td>
+              <td>{{ barimt.created }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+                <td colspan="7">Одоогоор баримт байхгүй байна.</td>
+            </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
@@ -261,7 +229,9 @@
 <div class="submit-section">
   <button id="generateBtn" class="btn" type="button">Баримт үүсгэх</button>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
   // Автоматаар баримтын төрөл солих (companyReg бөглөгдвөл 3, хоосон бол 1)
   document.getElementById('companyReg').addEventListener('input', function () {
@@ -368,7 +338,7 @@
           <td>${data.lottery || '-'}</td>
           <td>${data.created || '-'}</td>
         `;
-        tbody.appendChild(tr);
+        tbody.insertBefore(tr, tbody.firstChild);
 
         // Амжилттай болсны дараа талбаруудыг хоослох
         document.getElementById('totalAmount').value = '';
@@ -398,5 +368,4 @@
     window.location.href = `/export_excel/?${qs}`;
   });
 </script>
-</body>
-</html>
+{% endblock %}

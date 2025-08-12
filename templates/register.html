@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Бүртгүүлэх</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .register-card {
+      background: #fff;
+      padding: 24px 28px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      width: 320px;
+    }
+    h2 {
+      color: #2a9df4;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus {
+      border-color: #2a9df4;
+      box-shadow: 0 0 0 3px rgba(42,157,244,0.15);
+    }
+    button {
+      width: 100%;
+      background: #2a9df4;
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      padding: 12px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background: #1c7ed6;
+    }
+    .message {
+      margin-bottom: 16px;
+      font-size: 14px;
+      text-align: center;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+    .message.error {
+      color: #ef4444;
+      background: #fee2e2;
+      border: 1px solid #ef4444;
+    }
+    .message.success {
+      color: #22c55e;
+      background: #dcfce7;
+      border: 1px solid #22c55e;
+    }
+  </style>
+</head>
+<body>
+  <div class="register-card">
+    <h2>Шинээр бүртгүүлэх</h2>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST" action="{% url 'register' %}">
+      {% csrf_token %}
+      <label for="username">Хэрэглэгчийн нэр</label>
+      <input type="text" id="username" name="username" placeholder="Хэрэглэгчийн нэр" required />
+
+      <label for="email">И-мэйл</label>
+      <input type="email" id="email" name="email" placeholder="И-мэйл" required />
+
+      <label for="password">Нууц үг</label>
+      <input type="password" id="password" name="password" placeholder="Нууц үг" required />
+
+      <label for="password2">Нууц үгээ давтна уу</label>
+      <input type="password" id="password2" name="password2" placeholder="Нууц үгээ давтна уу" required />
+
+      <button type="submit">Бүртгүүлэх</button>
+    </form>
+  </div>
+</body>
+</html>

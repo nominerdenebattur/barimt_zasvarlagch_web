@@ -6,13 +6,58 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.utils.datetime_safe import datetime
 from .models import Barimt
-
+from django.contrib.auth.models import User
+from django.shortcuts import redirect
+from django.contrib import messages
 
 from datetime import datetime, timedelta
 
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render, redirect
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('zasvarlah')  # login амжилттай бол шилжих хуудсыг тохируулна
+        else:
+            error = "Нэвтрэх мэдээлэл буруу байна"
+            return render(request, 'logIn.html', {'error': error})
+    else:
+        return render(request, 'logIn.html')
+
+def logout_view(request):
+    logout(request)
+    return redirect('/')
+
+def register_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        password2 = request.POST.get('password2')
+
+        if password != password2:
+            messages.error(request, "Нууц үг таарахгүй байна.")
+            return render(request, 'register.html')
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Ийм хэрэглэгчийн нэр аль хэдийн бүртгэлтэй байна.")
+            return render(request, 'register.html')
+
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user.save()
+        messages.success(request, "Амжилттай бүртгэгдлээ! Та нэвтрэх боломжтой.")
+        return redirect('login')
+
+    return render(request, 'register.html')
+
 def zasvarlah(request):
     selected_date = request.GET.get('selected_date')
-    barimtuud = Barimt.objects.all().order_by('-created')
+    barimtuud = Barimt.objects.all().order_by('-id')
 
     if selected_date:
         try:

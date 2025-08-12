@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Баримт Засварлагч{% endblock %}</title>
+  <style>
+    :root {
+      --brand: #2a9df4;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --bg: #f9fafb;
+      --card: #ffffff;
+      --border: #e5e7eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #374151;
+      color: white;
+      padding: 10px 20px;
+    }
+    header .logo { font-weight: bold; }
+    header nav { display: flex; gap: 8px; }
+    header nav button,
+    .btn {
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    header nav button:hover,
+    .btn:hover { opacity: .95; }
+    main {
+      padding: 24px;
+    }
+    /* busad css nemj bolno */
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo">Лого1 | Лого2</div>
+  <nav>
+    <button type="button">Засварлах</button>
+    <button type="button">Хянах</button>
+    <button type="button">Тайлан</button>
+    <form method="POST" action="{% url 'login' %}" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit">Гарах</button>
+    </form>
+  </nav>
+</header>
+
+{% block content %}{% endblock %}
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>
