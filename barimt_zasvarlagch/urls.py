@@ -24,4 +24,5 @@ urlpatterns = [
     path('zasvarlah/', views.zasvarlah, name='zasvarlah'),
     path('generate/', views.ebarimt_generate, name='generate'),
     path('export_excel/', views.export_excel, name='export_excel'),
+    path('register/', views.register_view, name='register'),
 ]

@@ -29,7 +29,7 @@
       padding: 10px 20px;
     }
     header .logo { font-weight: bold; }
-    header nav { display: flex; gap: 8px; }
+    header nav { display: flex; gap:10px;}
     header nav button,
     .btn {
       background: var(--brand);
@@ -41,7 +41,7 @@
       font-weight: 600;
     }
     header nav button:hover,
-    .btn:hover { opacity: .95; }
+    .btn:hover { opacity: .80; }
     main {
       padding: 24px;
     }
@@ -52,9 +52,10 @@
 <header>
   <div class="logo">Лого1 | Лого2</div>
   <nav>
-    <button type="button">Засварлах</button>
-    <button type="button">Хянах</button>
-    <button type="button">Тайлан</button>
+    <button type="button" class="btn">Засварлах</button>
+    <button type="button" class="btn">Хянах</button>
+    <button type="button" class="btn">Тайлан</button>
+
     <form method="POST" action="{% url 'login' %}" style="display:inline;">
       {% csrf_token %}
       <button type="submit">Гарах</button>
