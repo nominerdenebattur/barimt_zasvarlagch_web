@@ -25,4 +25,6 @@ urlpatterns = [
     path('generate/', views.ebarimt_generate, name='generate'),
     path('export_excel/', views.export_excel, name='export_excel'),
     path('register/', views.register_view, name='register'),
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('compare/', views.compare_view, name='compare'),
 ]

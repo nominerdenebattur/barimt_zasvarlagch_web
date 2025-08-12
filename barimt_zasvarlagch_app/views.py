@@ -9,7 +9,7 @@ from .models import Barimt
 from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from django.contrib import messages
-
+from django.utils import timezone
 from datetime import datetime, timedelta
 
 from django.contrib.auth import authenticate, login, logout
@@ -78,7 +78,6 @@ def zasvarlah(request):
         'barimtuud': barimtuud,
         'selected_date': selected_date
     })
-
 
 def ebarimt_generate(request):
     # === Input Data ===
@@ -230,3 +229,43 @@ def export_excel(request):
         df.to_excel(writer, index=False, sheet_name='Баримт')
 
     return response
+
+def dashboard_view(request):
+    # GET параметрээс selected_date авч байна, огноо тодорхойгүй бол өнөөгийн огноо авна
+    selected_date = request.GET.get('selected_date')
+    if selected_date:
+        try:
+            from datetime import datetime
+            selected_date_obj = datetime.strptime(selected_date, '%Y-%m-%d').date()
+        except ValueError:
+            selected_date_obj = timezone.localdate()
+    else:
+        selected_date_obj = timezone.localdate()
+
+    # Тухайн өдрийн баримтуудыг шүүх, жишээ нь created гэдэг огнооны талбар байна гэж үзье
+    barimtuud = Barimt.objects.filter(
+        created__date=selected_date_obj,
+        lottery__isnull=True  # Сугалааны дугааргүй гэдгийг шалгах жишээ (сугалааны дугааргүй байдал)
+    ).order_by('-created')
+
+    context = {
+        'selected_date': selected_date_obj,
+        'barimtuud': barimtuud,
+    }
+    return render(request, 'dashboard.html', context)
+
+def compare_view(request):
+    if request.method == 'POST':
+        file1 = request.FILES.get('file1')
+        file2 = request.FILES.get('file2')
+
+        # Жишээ: Энд файл харьцуулах логикууд бичих
+        comparison_result = "Харьцуулалтын үр дүн энд гарна"
+
+        return render(request, 'compare_files.html', {
+            'comparison_result': comparison_result,
+            'file1': file1.name if file1 else None,
+            'file2': file2.name if file2 else None,
+        })
+
+    return render(request, 'compare.html')

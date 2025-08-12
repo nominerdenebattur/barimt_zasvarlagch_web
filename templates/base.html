@@ -50,11 +50,11 @@
 </head>
 <body>
 <header>
-  <div class="logo">Лого1 | Лого2</div>
+  <div class="logo">Лого | Premium nexus</div>
   <nav>
-    <button type="button" class="btn">Засварлах</button>
-    <button type="button" class="btn">Хянах</button>
-    <button type="button" class="btn">Тайлан</button>
+    <button type="button" class="btn" onclick="location.href='{% url 'zasvarlah' %}'">Засварлах</button>
+    <button type="button" class="btn" onclick="location.href='{% url 'dashboard' %}'">Хянах</button>
+    <button type="button" class="btn" onclick="location.href='{% url 'compare' %}'">Тайлан</button>
 
     <form method="POST" action="{% url 'login' %}" style="display:inline;">
       {% csrf_token %}

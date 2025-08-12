@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Файл харьцуулах{% endblock %}
+
+{% block content %}
+<h1>Хоёр файл харьцуулах</h1>
+
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <label>Файл 1:</label>
+  <input type="file" name="file1" required><br><br>
+
+  <label>Файл 2:</label>
+  <input type="file" name="file2" required><br><br>
+
+  <button type="submit">Харьцуулах</button>
+</form>
+
+{% if comparison_result %}
+  <h2>Харьцуулалтын үр дүн:</h2>
+  <p>{{ comparison_result }}</p>
+  <p>Файл 1: {{ file1 }}</p>
+  <p>Файл 2: {{ file2 }}</p>
+{% endif %}
+{% endblock %}
