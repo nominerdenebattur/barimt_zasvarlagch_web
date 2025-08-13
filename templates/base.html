@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}Баримт Засварлагч{% endblock %}</title>
+    {% block extra_head %}{% endblock %}
   <style>
     :root {
       --brand: #2a9df4;
@@ -45,23 +46,22 @@
     main {
       padding: 24px;
     }
-    /* busad css nemj bolno */
   </style>
 </head>
 <body>
-<header>
-  <div class="logo">Лого | Premium nexus</div>
-  <nav>
-    <button type="button" class="btn" onclick="location.href='{% url 'zasvarlah' %}'">Засварлах</button>
-    <button type="button" class="btn" onclick="location.href='{% url 'dashboard' %}'">Хянах</button>
-    <button type="button" class="btn" onclick="location.href='{% url 'compare' %}'">Тайлан</button>
+    <header>
+      <div class="logo">Лого | Premium nexus</div>
+      <nav>
+        <button type="button" class="btn" onclick="location.href='{% url 'zasvarlah' %}'">Засварлах</button>
+        <button type="button" class="btn" onclick="location.href='{% url 'dashboard' %}'">Хянах</button>
+        <button type="button" class="btn" onclick="location.href='{% url 'compare' %}'">Тайлан</button>
 
-    <form method="POST" action="{% url 'login' %}" style="display:inline;">
-      {% csrf_token %}
-      <button type="submit">Гарах</button>
-    </form>
-  </nav>
-</header>
+        <form method="POST" action="{% url 'login' %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit">Гарах</button>
+        </form>
+      </nav>
+    </header>
 
 {% block content %}{% endblock %}
 

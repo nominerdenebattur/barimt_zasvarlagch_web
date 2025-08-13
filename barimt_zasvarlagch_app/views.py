@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
+from django.db.models import Q
 
 def login_view(request):
     if request.method == 'POST':
@@ -231,41 +232,55 @@ def export_excel(request):
     return response
 
 def dashboard_view(request):
-    # GET параметрээс selected_date авч байна, огноо тодорхойгүй бол өнөөгийн огноо авна
     selected_date = request.GET.get('selected_date')
+    barimtuud = Barimt.objects.all().order_by('-id')
+    lottery_hooson_barimtuud = Barimt.objects.filter(lottery__isnull=True)
+
     if selected_date:
         try:
-            from datetime import datetime
-            selected_date_obj = datetime.strptime(selected_date, '%Y-%m-%d').date()
+            # selected_date-г datetime.date болгож хөрвүүлэх
+            date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
+
+            # Өдрийн эхлэл ба дараагийн өдрийн эхлэл
+            start_datetime = datetime.combine(date_obj, datetime.min.time())
+            end_datetime = start_datetime + timedelta(days=1)
+
+            # Огноо, цагийн хүрээнд шүүх
+            # Тухайн өдрийн баримтуудыг шүүх, жишээ нь created гэдэг огнооны талбар байна гэж үзье
+            barimtuud = Barimt.objects.filter(
+                created__gte=start_datetime, created__lt=end_datetime,
+            ).order_by('-created')
+
+            lottery_hooson_barimtuud = Barimt.objects.filter(
+                created__gte=start_datetime, created__lt=end_datetime,
+                lottery__isnull=True
+            )
         except ValueError:
-            selected_date_obj = timezone.localdate()
-    else:
-        selected_date_obj = timezone.localdate()
+            pass
 
-    # Тухайн өдрийн баримтуудыг шүүх, жишээ нь created гэдэг огнооны талбар байна гэж үзье
-    barimtuud = Barimt.objects.filter(
-        created__date=selected_date_obj,
-        lottery__isnull=True  # Сугалааны дугааргүй гэдгийг шалгах жишээ (сугалааны дугааргүй байдал)
-    ).order_by('-created')
-
-    context = {
-        'selected_date': selected_date_obj,
+    return render(request, 'dashboard.html', {
         'barimtuud': barimtuud,
-    }
-    return render(request, 'dashboard.html', context)
+        'lottery_hooson_barimtuud': lottery_hooson_barimtuud,
+        'selected_date': selected_date
+    })
 
 def compare_view(request):
-    if request.method == 'POST':
-        file1 = request.FILES.get('file1')
-        file2 = request.FILES.get('file2')
+    selected_date = request.GET.get('selected_date', None)
 
-        # Жишээ: Энд файл харьцуулах логикууд бичих
-        comparison_result = "Харьцуулалтын үр дүн энд гарна"
+    # Огноогоор шүүсэн өгөгдөл
+    filters = {}
+    if selected_date:
+        filters['created__date'] = selected_date  # Огноогоор шүүж байна гэж үзэж байна
 
-        return render(request, 'compare_files.html', {
-            'comparison_result': comparison_result,
-            'file1': file1.name if file1 else None,
-            'file2': file2.name if file2 else None,
-        })
+    # Бүх баримт (огноогоор шүүсэн эсвэл шүүгээгүй)
+    all_barimtuud = Barimt.objects.filter(**filters).order_by('-created')
 
-    return render(request, 'compare.html')
+    # Сугалааны дугааргүй баримтууд: lottery хоосон буюу NULL
+    lottery_hooson_barimtuud = all_barimtuud.filter(Q(lottery__isnull=True) | Q(lottery=''))
+
+    context = {
+        'barimtuud': all_barimtuud,
+        'lottery_hooson_barimtuud': lottery_hooson_barimtuud,
+        'selected_date': selected_date,
+    }
+    return render(request, 'compare.html', context)

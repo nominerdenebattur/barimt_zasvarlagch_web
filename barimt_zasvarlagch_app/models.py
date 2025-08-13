@@ -8,7 +8,6 @@ class Barimt(models.Model):
     billId = models.CharField(max_length=50, default="0")
     subBillId = models.CharField(max_length=50, default="0")
     storeNo = models.CharField(max_length=5, default="0")
-    # companyId -> companyReg
     companyReg = models.CharField(default=0, blank=True, null=True, max_length=10)
     created = models.DateTimeField(default=timezone.now)
 

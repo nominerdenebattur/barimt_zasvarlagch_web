@@ -232,140 +232,140 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-  // Автоматаар баримтын төрөл солих (companyReg бөглөгдвөл 3, хоосон бол 1)
-  document.getElementById('companyReg').addEventListener('input', function () {
-    const hasReg = this.value.trim().length > 0;
-    document.getElementById('companyFieldTypeInput').value = hasReg ? '3' : '1';
-  });
+    <script>
+      // Автоматаар баримтын төрөл солих (companyReg бөглөгдвөл 3, хоосон бол 1)
+      document.getElementById('companyReg').addEventListener('input', function () {
+        const hasReg = this.value.trim().length > 0;
+        document.getElementById('companyFieldTypeInput').value = hasReg ? '3' : '1';
+      });
 
-  // ====== Салбар хайлт (autocomplete) ======
-  const branchInput = document.getElementById('branchName');
-  const suggestionList = document.getElementById('suggestions');
-  const storeIdInput = document.getElementById('storeId');
+      // ====== Салбар хайлт (autocomplete) ======
+      const branchInput = document.getElementById('branchName');
+      const suggestionList = document.getElementById('suggestions');
+      const storeIdInput = document.getElementById('storeId');
 
-  // Debounce helper
-  let debounceTimer = null;
-  function debounce(fn, delay) {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(fn, delay);
-  }
+      // Debounce helper
+      let debounceTimer = null;
+      function debounce(fn, delay) {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(fn, delay);
+      }
 
-  branchInput.addEventListener('input', function () {
-    const q = branchInput.value.trim();
-    if (q.length < 2) {
-      suggestionList.innerHTML = '';
-      return;
-    }
-    debounce(() => {
-      fetch('https://pp.cumongol.mn/api/list-biz/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bizloc_nm: q })
-      })
-        .then(r => r.json())
-        .then(data => {
+      branchInput.addEventListener('input', function () {
+        const q = branchInput.value.trim();
+        if (q.length < 2) {
           suggestionList.innerHTML = '';
-          const results = (data && data.results) ? data.results : [];
-          if (!results.length) return;
-
-          results.forEach(item => {
-            const li = document.createElement('li');
-            li.textContent = `${item.bizloc_nm}  —  ${item.bizloc_cd}`;
-            li.dataset.code = item.bizloc_cd;
-            li.addEventListener('click', () => {
-              branchInput.value = item.bizloc_nm;
-              storeIdInput.value = item.bizloc_cd;
+          return;
+        }
+        debounce(() => {
+          fetch('https://pp.cumongol.mn/api/list-biz/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bizloc_nm: q })
+          })
+            .then(r => r.json())
+            .then(data => {
               suggestionList.innerHTML = '';
+              const results = (data && data.results) ? data.results : [];
+              if (!results.length) return;
+
+              results.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = `${item.bizloc_nm}  —  ${item.bizloc_cd}`;
+                li.dataset.code = item.bizloc_cd;
+                li.addEventListener('click', () => {
+                  branchInput.value = item.bizloc_nm;
+                  storeIdInput.value = item.bizloc_cd;
+                  suggestionList.innerHTML = '';
+                });
+                suggestionList.appendChild(li);
+              });
+            })
+            .catch(err => {
+              console.error('API request error:', err);
+              suggestionList.innerHTML = '<li style="color:red;">Алдаа гарлаа</li>';
             });
-            suggestionList.appendChild(li);
-          });
-        })
-        .catch(err => {
-          console.error('API request error:', err);
-          suggestionList.innerHTML = '<li style="color:red;">Алдаа гарлаа</li>';
-        });
-    }, 300);
-  });
+        }, 300);
+      });
 
-  // Click outside to close suggestions
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('#suggestions') && e.target !== branchInput) {
-      suggestionList.innerHTML = '';
-    }
-  });
+      // Click outside to close suggestions
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#suggestions') && e.target !== branchInput) {
+          suggestionList.innerHTML = '';
+        }
+      });
 
-  // ====== Баримт үүсгэх ======
-  document.getElementById('generateBtn').addEventListener('click', function () {
-    const amount = document.getElementById('totalAmount').value.trim();
-    const companyRegNo = document.getElementById('companyReg').value.trim();
-    const storeNo = document.getElementById('storeId').value.trim();
-    const receiptType = document.getElementById('companyFieldTypeInput').value.trim();
-    const branchNameVal = branchInput.value.trim();
+      // ====== Баримт үүсгэх ======
+      document.getElementById('generateBtn').addEventListener('click', function () {
+        const amount = document.getElementById('totalAmount').value.trim();
+        const companyRegNo = document.getElementById('companyReg').value.trim();
+        const storeNo = document.getElementById('storeId').value.trim();
+        const receiptType = document.getElementById('companyFieldTypeInput').value.trim();
+        const branchNameVal = branchInput.value.trim();
 
-    if (!amount) { alert("Нийт дүн оруулна уу."); return; }
-    if (!storeNo) { alert("Дэлгүүрийн дугаар оруулна уу."); return; }
-    if (!branchNameVal) { alert("Салбарын нэрээ сонгоно уу."); return; }
+        if (!amount) { alert("Нийт дүн оруулна уу."); return; }
+        if (!storeNo) { alert("Дэлгүүрийн дугаар оруулна уу."); return; }
+        if (!branchNameVal) { alert("Салбарын нэрээ сонгоно уу."); return; }
 
-    if (!confirm(`Баримт үүсгэхэд итгэлтэй байна уу?\nНийт дүн: ${amount}\nБайгууллагын регистр: ${companyRegNo || '-'}`)) {
-      alert("Та мэдээллээ шалгаад дахин оролдоно уу.");
-      return;
-    }
-
-    const qs = new URLSearchParams({
-      totalAmount: amount,
-      companyId: companyRegNo,
-      storeId: storeNo,
-      companyFieldTypeInput: receiptType
-    }).toString();
-
-    fetch(`/generate/?${qs}`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.status !== 'success') {
-          console.error('Generate error:', data);
-          throw new Error(data.message || 'API error');
+        if (!confirm(`Баримт үүсгэхэд итгэлтэй байна уу?\nНийт дүн: ${amount}\nБайгууллагын регистр: ${companyRegNo || '-'}`)) {
+          alert("Та мэдээллээ шалгаад дахин оролдоно уу.");
+          return;
         }
 
-        const tbody = document.querySelector('.document-box table tbody');
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${tbody.children.length + 1}</td>
-          <td>${data.billId || '-'}</td>
-          <td>${amount}</td>
-          <td>${storeNo}</td>
-          <td>${companyRegNo || '-'}</td>
-          <td>${data.lottery || '-'}</td>
-          <td>${data.created || '-'}</td>
-        `;
-        tbody.insertBefore(tr, tbody.firstChild);
+        const qs = new URLSearchParams({
+          totalAmount: amount,
+          companyId: companyRegNo,
+          storeId: storeNo,
+          companyFieldTypeInput: receiptType
+        }).toString();
 
-        // Амжилттай болсны дараа талбаруудыг хоослох
-        document.getElementById('totalAmount').value = '';
-        document.getElementById('companyReg').value = '';
-        document.getElementById('companyFieldTypeInput').value = '1';
-        document.getElementById('storeId').value = '';
-        branchInput.value = '';
-      })
-      .catch(err => {
-        console.error('Error:', err);
-        alert("Алдаа гарлаа. Дахин оролдоно уу.");
+        fetch(`/generate/?${qs}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data.status !== 'success') {
+              console.error('Generate error:', data);
+              throw new Error(data.message || 'API error');
+            }
+
+            const tbody = document.querySelector('.document-box table tbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${tbody.children.length + 1}</td>
+              <td>${data.billId || '-'}</td>
+              <td>${amount}</td>
+              <td>${storeNo}</td>
+              <td>${companyRegNo || '-'}</td>
+              <td>${data.lottery || '-'}</td>
+              <td>${data.created || '-'}</td>
+            `;
+            tbody.insertBefore(tr, tbody.firstChild);
+
+            // Амжилттай болсны дараа талбаруудыг хоослох
+            document.getElementById('totalAmount').value = '';
+            document.getElementById('companyReg').value = '';
+            document.getElementById('companyFieldTypeInput').value = '1';
+            document.getElementById('storeId').value = '';
+            branchInput.value = '';
+          })
+          .catch(err => {
+            console.error('Error:', err);
+            alert("Алдаа гарлаа. Дахин оролдоно уу.");
+          });
       });
-  });
 
-  // ====== Excel татах ======
-  document.getElementById('exportBtn').addEventListener('click', function () {
-    const amount = document.getElementById('totalAmount').value.trim();
-    const companyRegNo = document.getElementById('companyReg').value.trim();
-    const storeNo = document.getElementById('storeId').value.trim();
+      // ====== Excel татах ======
+      document.getElementById('exportBtn').addEventListener('click', function () {
+        const amount = document.getElementById('totalAmount').value.trim();
+        const companyRegNo = document.getElementById('companyReg').value.trim();
+        const storeNo = document.getElementById('storeId').value.trim();
 
-    const qs = new URLSearchParams({
-      amount: amount,
-      companyReg: companyRegNo,
-      storeId: storeNo
-    }).toString();
+        const qs = new URLSearchParams({
+          amount: amount,
+          companyReg: companyRegNo,
+          storeId: storeNo
+        }).toString();
 
-    window.location.href = `/export_excel/?${qs}`;
-  });
-</script>
+        window.location.href = `/export_excel/?${qs}`;
+      });
+    </script>
 {% endblock %}
