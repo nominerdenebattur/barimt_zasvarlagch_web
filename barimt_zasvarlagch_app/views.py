@@ -16,6 +16,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.db.models import Q
 import certifi
+from django.contrib.auth.decorators import login_required, permission_required
 
 def login_view(request):
     if request.method == 'POST':
@@ -23,9 +24,12 @@ def login_view(request):
         password = request.POST.get('password', '').strip()
         print(f"Trying login with: {username} / {password}")
         user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('zasvarlah')  # login амжилттай бол шилжих хуудсыг тохируулна
+        if user.groups.filter(name='Zasvarlah').exists():
+            return redirect('zasvarlah')  # Хянах group бол dashboard руу
+        elif user.groups.filter(name='Hyanah').exists():
+            return redirect('dashboard')  # Тайлан group бол тайлан руу
+        elif user.groups.filter(name='Tailan').exists():
+            return redirect('compare')
         else:
             error = "Нэвтрэх мэдээлэл буруу байна"
             return render(request, 'logIn.html', {'error': error})
@@ -36,27 +40,32 @@ def logout_view(request):
     logout(request)
     return redirect('/')
 
-def register_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        password2 = request.POST.get('password2')
+def group_required(group_name):
+    def in_group(u):
+        return u.is_authenticated and u.groups.filter(name=group_name).exists()
+    return user_passes_test(in_group, login_url='/login/')
 
-        if password != password2:
-            messages.error(request, "Нууц үг таарахгүй байна.")
-            return render(request, 'register.html')
-
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "Ийм хэрэглэгчийн нэр аль хэдийн бүртгэлтэй байна.")
-            return render(request, 'register.html')
-
-        user = User.objects.create_user(username=username, email=email, password=password)
-        user.save()
-        messages.success(request, "Амжилттай бүртгэгдлээ! Та нэвтрэх боломжтой.")
-        return redirect('login')
-
-    return render(request, 'register.html')
+# def register_view(request):
+#     if request.method == 'POST':
+#         username = request.POST.get('username')
+#         email = request.POST.get('email')
+#         password = request.POST.get('password')
+#         password2 = request.POST.get('password2')
+#
+#         if password != password2:
+#             messages.error(request, "Нууц үг таарахгүй байна.")
+#             return render(request, 'register.html')
+#
+#         if User.objects.filter(username=username).exists():
+#             messages.error(request, "Ийм хэрэглэгчийн нэр аль хэдийн бүртгэлтэй байна.")
+#             return render(request, 'register.html')
+#
+#         user = User.objects.create_user(username=username, email=email, password=password)
+#         user.save()
+#         messages.success(request, "Амжилттай бүртгэгдлээ! Та нэвтрэх боломжтой.")
+#         return redirect('login')
+#
+#     return render(request, 'register.html')
 
 def zasvarlah(request):
     selected_date = request.GET.get('selected_date')
@@ -236,8 +245,14 @@ import requests
 from django.shortcuts import render
 from datetime import date
 
+@login_required
+@permission_required('Hyanah')
 def dashboard_view(request):
-    selected_date = request.GET.get('selected_date') or date.today().isoformat()
+    selected_date = request.GET.get('selected_date')
+    if not selected_date:
+        yesterday = date.today() - timedelta(days=1)
+        selected_date = yesterday.isoformat()
+
     page = int(request.GET.get('page', 1))
 
     api_url = "https://pp.cumongol.mn/api/bill/"

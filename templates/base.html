@@ -52,9 +52,17 @@
     <header>
       <img src="/media/logo.png" alt="Лого" width="80">
       <nav>
-        <button type="button" class="btn" onclick="location.href='{% url 'zasvarlah' %}'">Засварлах</button>
-        <button type="button" class="btn" onclick="location.href='{% url 'dashboard' %}'">Хянах</button>
-        <button type="button" class="btn" onclick="location.href='{% url 'compare' %}'">Тайлан</button>
+        {% if is_zasvarlah %}
+          <button type="button" class="btn" onclick="location.href='{% url 'zasvarlah' %}'">Засварлах</button>
+        {% endif %}
+
+        {% if is_hyanah %}
+          <button type="button" class="btn" onclick="location.href='{% url 'dashboard' %}'">Хянах</button>
+        {% endif %}
+
+        {% if is_tailan %}
+          <button type="button" class="btn" onclick="location.href='{% url 'compare' %}'">Тайлан</button>
+        {% endif %}
 
         <form method="POST" action="{% url 'login' %}" style="display:inline;">
           {% csrf_token %}
