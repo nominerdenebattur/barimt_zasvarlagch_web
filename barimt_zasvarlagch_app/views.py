@@ -24,12 +24,9 @@ def login_view(request):
         password = request.POST.get('password', '').strip()
         print(f"Trying login with: {username} / {password}")
         user = authenticate(request, username=username, password=password)
-        if user.groups.filter(name='Zasvarlah').exists():
-            return redirect('zasvarlah')  # Хянах group бол dashboard руу
-        elif user.groups.filter(name='Hyanah').exists():
-            return redirect('dashboard')  # Тайлан group бол тайлан руу
-        elif user.groups.filter(name='Tailan').exists():
-            return redirect('compare')
+        if user is not None:
+            login(request, user)
+            return redirect('zasvarlah')  # login амжилттай бол шилжих хуудсыг тохируулна
         else:
             error = "Нэвтрэх мэдээлэл буруу байна"
             return render(request, 'logIn.html', {'error': error})
@@ -245,8 +242,6 @@ import requests
 from django.shortcuts import render
 from datetime import date
 
-@login_required
-@permission_required('Hyanah')
 def dashboard_view(request):
     selected_date = request.GET.get('selected_date')
     if not selected_date:
