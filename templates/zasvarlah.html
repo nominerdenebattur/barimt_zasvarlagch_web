@@ -251,6 +251,7 @@
         debounceTimer = setTimeout(fn, delay);
       }
 
+      //auto complete 2-s deesh useg bichij baij salbariin jagshaalt garch irne
       branchInput.addEventListener('input', function () {
         const q = branchInput.value.trim();
         if (q.length < 2) {
@@ -261,7 +262,7 @@
           fetch('https://pp.cumongol.mn/api/list-biz/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ bizloc_nm: q })
+            body: JSON.stringify({ bizloc_nm: q }) //json format ruu hurvuuleh
           })
             .then(r => r.json())
             .then(data => {
@@ -285,7 +286,7 @@
               console.error('API request error:', err);
               suggestionList.innerHTML = '<li style="color:red;">Алдаа гарлаа</li>';
             });
-        }, 300);
+        }, 300); //hereglegch bichhe bolisnos 300ms daraa fetch ajillana
       });
 
       // Click outside to close suggestions

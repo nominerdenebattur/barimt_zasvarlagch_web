@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.db.models import Q
+import certifi
 
 def login_view(request):
     if request.method == 'POST':
@@ -231,37 +232,48 @@ def export_excel(request):
 
     return response
 
+import requests
+from django.shortcuts import render
+
 def dashboard_view(request):
     selected_date = request.GET.get('selected_date')
-    barimtuud = Barimt.objects.all().order_by('-id')
-    lottery_hooson_barimtuud = Barimt.objects.filter(lottery__isnull=True)
+    page = int(request.GET.get('page', 1))
+
+    barimtuud = []
+    lottery_hooson_barimtuud = []
+    has_prev = has_next = False
+    total_pages = 1
 
     if selected_date:
+        api_url = "https://pp.cumongol.mn/api/bill/"
+        payload = {"date": selected_date, "page": page}
+        headers = {"Content-Type": "application/json"}
+
         try:
-            # selected_date-г datetime.date болгож хөрвүүлэх
-            date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
+            # SSL шалгалтгүйгээр fetch хийх (development-д ашиглах)
+            r = requests.post(api_url, json=payload, headers=headers, verify=False)
+            r.raise_for_status()
+            data = r.json()
 
-            # Өдрийн эхлэл ба дараагийн өдрийн эхлэл
-            start_datetime = datetime.combine(date_obj, datetime.min.time())
-            end_datetime = start_datetime + timedelta(days=1)
+            barimtuud = data.get("items", [])
+            has_prev = data.get("has_prev", False)
+            has_next = data.get("has_next", False)
+            total_pages = data.get("total_pages", 1)
 
-            # Огноо, цагийн хүрээнд шүүх
-            # Тухайн өдрийн баримтуудыг шүүх, жишээ нь created гэдэг огнооны талбар байна гэж үзье
-            barimtuud = Barimt.objects.filter(
-                created__gte=start_datetime, created__lt=end_datetime,
-            ).order_by('-created')
+            # pos_api_bill_id хоосон баримтууд
+            lottery_hooson_barimtuud = [b for b in barimtuud if not b.get("pos_api_bill_id")]
 
-            lottery_hooson_barimtuud = Barimt.objects.filter(
-                created__gte=start_datetime, created__lt=end_datetime,
-                lottery__isnull=True
-            )
-        except ValueError:
-            pass
+        except Exception as e:
+            print("API Error:", e)
 
-    return render(request, 'dashboard.html', {
-        'barimtuud': barimtuud,
-        'lottery_hooson_barimtuud': lottery_hooson_barimtuud,
-        'selected_date': selected_date
+    return render(request, "dashboard.html", {
+        "selected_date": selected_date,
+        "barimtuud": barimtuud,
+        "lottery_hooson_barimtuud": lottery_hooson_barimtuud,
+        "page": page,
+        "has_prev": has_prev,
+        "has_next": has_next,
+        "total_pages": total_pages
     })
 
 def compare_view(request):

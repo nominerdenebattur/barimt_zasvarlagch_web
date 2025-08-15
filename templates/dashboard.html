@@ -3,175 +3,160 @@
 
 {% block extra_head %}
 <style>
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-
-  /* 1) Дээд toolbar: фильтер + үйлдэл нэг мөрөнд */
-  .toolbar {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap; /* жижиг дэлгэцэнд эвтэйхэн */
-    margin-bottom: 16px;
-  }
-  .date-filter {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  h2, h3 {
-    color: var(--text);
-    margin: 10px 0;
-  }
-
-  /* 2) Хоёр хүснэгтийг зэрэгцүүлэх grid */
-  .tables-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-  @media (max-width: 1024px) {
-    .tables-grid {
-      grid-template-columns: 1fr; /* жижиг дэлгэцэнд давхарлана */
-    }
-  }
-
-  .data-section {
-    padding: 15px;
-    background: var(--bg);
-    border-radius: 6px;
-  }
-
-  /* Хүснэгтийн суурь гоёл */
-  .document-box {
-    overflow: auto;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 720px; /* жижиг дэлгэцэнд overflow-оор гүйлгэнэ */
-  }
-  thead th {
-      position: sticky;
-      top: 0;
-      background: var(--brand);
-      color: #fff;
-      text-align: left;
-      padding: 10px;
-      z-index: 1;
-  }
-  tbody td {
-    border-bottom: 1px solid var(--border);
-    padding: 8px 10px;
-  }
-  .tables-grid{
-      padding: 16px;
-      position: sticky;
-      top: 16px;
-  }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+  .toolbar { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 16px; }
+  .date-filter { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  h2, h3 { color: var(--text); margin: 10px 0; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: var(--brand); color: #fff; padding: 10px; position: sticky; top: 0; }
+  tbody td { border-bottom: 1px solid var(--border); padding: 8px 10px; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="card">
-  <!-- Toolbar: фильтер + Баримт харах -->
   <div class="toolbar">
-    <form method="GET" action="" class="date-filter">
-      <label for="selected_date">Огноо:</label>
-      <input type="date" name="selected_date" id="selected_date" value="{{ selected_date|default:'' }}">
-      <button type="submit" class="btn">Шүүх</button>
-    </form>
-
-    <div class="actions">
-      <button id="exportBtn" class="btn" type="button">Баримт харах</button>
-    </div>
+    <label for="selected_date">Огноо:</label>
+    <input type="date" id="selected_date" value="{{ selected_date|default:None }}">
+    <button id="fetchBtn" class="btn" type="button">Шүүх</button>
   </div>
 
   <h2>Шивсэн баримтын жагсаалт</h2>
 
-  <!-- Хоёр хүснэгт: зэрэгцүүлсэн -->
-  <div class="tables-grid">
+  <div style="display: flex; gap: 20px; align-items: flex-start;">
     <!-- Хүснэгт 1 -->
-    <section class="data-section">
-      <h3>Баримтын жагсаалт</h3>
-      <div class="document-box">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">№</th>
-              <th scope="col">Bill ID</th>
-              <th scope="col">Нийт дүн</th>
-              <th scope="col">Дэлгүүр</th>
-              <th scope="col">Reg</th>
-              <th scope="col">Lottery</th>
-              <th scope="col">Огноо</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for barimt in barimtuud %}
-              <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ barimt.billId }}</td>
-                <td>{{ barimt.totalAmount }}</td>
-                <td>{{ barimt.storeNo }}</td>
-                <td>{{ barimt.companyReg }}</td>
-                <td>{{ barimt.lottery }}</td>
-                <td>{{ barimt.created }}</td>
-              </tr>
-            {% empty %}
-              <tr>
-                <td colspan="7">Одоогоор баримт байхгүй байна.</td>
-              </tr>
-            {% endfor %}
-          </tbody>
+    <div style="flex: 1;">
+        <h3>Бүх баримт</h3>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>storeid</th>
+                    <th>receiptno</th>
+                    <th>pos_api_lottery</th>
+                    <th>pos_api_bill_id</th>
+                    <th>pos_api_sub_bill_id</th>
+                    <th>grosssale</th>
+                    <th>is_return</th>
+                </tr>
+            </thead>
+            <tbody id="barimt-body"></tbody>
         </table>
-      </div>
-    </section>
+    </div>
 
     <!-- Хүснэгт 2 -->
-    <section class="data-section">
-      <h3>Сугалааны дугааргүй баримтын жагсаалт</h3>
-      <div class="document-box">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">№</th>
-              <th scope="col">Bill ID</th>
-              <th scope="col">Нийт дүн</th>
-              <th scope="col">Дэлгүүр</th>
-              <th scope="col">Reg</th>
-              <th scope="col">Lottery</th>
-              <th scope="col">Огноо</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for barimt in lottery_hooson_barimtuud %}
-              <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ barimt.billId }}</td>
-                <td>{{ barimt.totalAmount }}</td>
-                <td>{{ barimt.storeNo }}</td>
-                <td>{{ barimt.companyReg }}</td>
-                <td>{{ barimt.lottery }}</td>
-                <td>{{ barimt.created }}</td>
-              </tr>
-            {% empty %}
-              <tr>
-                <td colspan="7">Одоогоор баримт байхгүй байна.</td>
-              </tr>
-            {% endfor %}
-          </tbody>
+    <div style="flex: 1;">
+        <h3>Сугалааны дугааргүй баримт</h3>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>storeid</th>
+                    <th>receiptno</th>
+                    <th>pos_api_lottery</th>
+                    <th>pos_api_bill_id</th>
+                    <th>pos_api_sub_bill_id</th>
+                    <th>grosssale</th>
+                    <th>is_return</th>
+                </tr>
+            </thead>
+            <tbody id="lottery-body"></tbody>
         </table>
-      </div>
-    </section>
+    </div>
   </div>
+
+  <div class="pagination" id="pagination"></div>
 </div>
+
+<script>
+async function fetchBarimt(date, page = 1) {
+    const apiUrl = "https://pp.cumongol.mn/api/bill/";
+    const payload = { date, page };
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const data = await response.json();
+        const barimtuud = data.items || [];
+        const lottery_hooson_barimtuud = barimtuud.filter(b => !b.pos_api_bill_id);
+
+        const barimtBody = document.getElementById("barimt-body");
+        barimtBody.innerHTML = "";
+        barimtuud.forEach((item, index) => {
+            const row = document.createElement("tr");
+            if (item.is_return) row.style.backgroundColor = "yellow";
+            if (!item.pos_api_bill_id) row.style.backgroundColor = "red";
+            row.innerHTML = `
+                <td>${index+1}</td>
+                <td>${item.storeid || ""}</td>
+                <td>${item.receiptno || ""}</td>
+                <td>${item.pos_api_lottery || ""}</td>
+                <td>${item.pos_api_bill_id || ""}</td>
+                <td>${item.pos_api_sub_bill_id || ""}</td>
+                <td>${item.grosssale || ""}</td>
+                <td>${item.is_return}</td>
+            `;
+            barimtBody.appendChild(row);
+        });
+
+        const lotteryBody = document.getElementById("lottery-body");
+        lotteryBody.innerHTML = "";
+        lottery_hooson_barimtuud.forEach((item, index) => {
+            const row = document.createElement("tr");
+            row.style.backgroundColor = "red";
+            row.style.color = "white";
+            row.innerHTML = `
+                <td>${index+1}</td>
+                <td>${item.storeid || ""}</td>
+                <td>${item.receiptno || ""}</td>
+                <td>${item.pos_api_lottery || ""}</td>
+                <td>${item.pos_api_bill_id || ""}</td>
+                <td>${item.pos_api_sub_bill_id || ""}</td>
+                <td>${item.grosssale || ""}</td>
+                <td>${item.is_return}</td>
+            `;
+            lotteryBody.appendChild(row);
+        });
+
+        // Pagination
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
+        if (data.has_prev) {
+            const prev = document.createElement("button");
+            prev.textContent = "Өмнөх";
+            prev.onclick = () => fetchBarimt(date, page-1);
+            pagination.appendChild(prev);
+        }
+        const span = document.createElement("span");
+        span.textContent = ` ${page} / ${data.total_pages} `;
+        pagination.appendChild(span);
+        if (data.has_next) {
+            const next = document.createElement("button");
+            next.textContent = "Дараах";
+            next.onclick = () => fetchBarimt(date, page+1);
+            pagination.appendChild(next);
+        }
+
+    } catch (err) {
+        console.error("API Error:", err);
+    }
+}
+
+// Event
+document.addEventListener("DOMContentLoaded", () => {
+    const selectedDate = document.getElementById("selected_date").value;
+    if(selectedDate) fetchBarimt(selectedDate, 1);
+
+    document.getElementById("fetchBtn").addEventListener("click", () => {
+        const date = document.getElementById("selected_date").value;
+        fetchBarimt(date, 1);
+    });
+});
+</script>
 {% endblock %}
