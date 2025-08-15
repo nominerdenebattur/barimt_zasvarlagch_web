@@ -234,37 +234,39 @@ def export_excel(request):
 
 import requests
 from django.shortcuts import render
+from datetime import date
 
 def dashboard_view(request):
-    selected_date = request.GET.get('selected_date')
+    selected_date = request.GET.get('selected_date') or date.today().isoformat()
     page = int(request.GET.get('page', 1))
+
+    api_url = "https://pp.cumongol.mn/api/bill/"
+    payload = {
+        "date": selected_date,
+        "page": page
+    }
+    headers = {"Content-Type": "application/json"}
 
     barimtuud = []
     lottery_hooson_barimtuud = []
     has_prev = has_next = False
     total_pages = 1
 
-    if selected_date:
-        api_url = "https://pp.cumongol.mn/api/bill/"
-        payload = {"date": selected_date, "page": page}
-        headers = {"Content-Type": "application/json"}
+    try:
+        r = requests.post(api_url, json=payload, headers=headers, verify=False)  # verify=False SSL алдааас зайлсхийх
+        r.raise_for_status()
+        data = r.json()
 
-        try:
-            # SSL шалгалтгүйгээр fetch хийх (development-д ашиглах)
-            r = requests.post(api_url, json=payload, headers=headers, verify=False)
-            r.raise_for_status()
-            data = r.json()
+        barimtuud = data.get("items", [])
+        has_prev = data.get("has_prev", False)
+        has_next = data.get("has_next", False)
+        total_pages = data.get("total_pages", 1)
 
-            barimtuud = data.get("items", [])
-            has_prev = data.get("has_prev", False)
-            has_next = data.get("has_next", False)
-            total_pages = data.get("total_pages", 1)
+        # pos_api_bill_id хоосон баримтууд
+        lottery_hooson_barimtuud = [b for b in barimtuud if not b.get("pos_api_bill_id")]
 
-            # pos_api_bill_id хоосон баримтууд
-            lottery_hooson_barimtuud = [b for b in barimtuud if not b.get("pos_api_bill_id")]
-
-        except Exception as e:
-            print("API Error:", e)
+    except Exception as e:
+        print("API Error:", e)
 
     return render(request, "dashboard.html", {
         "selected_date": selected_date,

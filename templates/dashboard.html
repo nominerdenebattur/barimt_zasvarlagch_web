@@ -3,30 +3,105 @@
 
 {% block extra_head %}
 <style>
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
-  .toolbar { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 16px; }
-  .date-filter { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-  h2, h3 { color: var(--text); margin: 10px 0; }
-  table { width: 100%; border-collapse: collapse; }
-  thead th { background: var(--brand); color: #fff; padding: 10px; position: sticky; top: 0; }
-  tbody td { border-bottom: 1px solid var(--border); padding: 8px 10px; }
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.toolbar {
+    {#display: flex;#}
+    gap: 30px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.date-filter {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+h2{
+    font-size: 16px
+}
+h3 {
+    color: var(--text);
+    margin: 10px 0;
+    font-size: 14px
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+table th, table td {
+    padding: 4px 6px; /* padding багасгах */
+    font-size: 12px;  /* текстийг жижиг болгох */
+}
+thead th {
+    background: var(--brand);
+    color: #fff;
+    padding: 10px;
+    position: sticky;
+    top: 0;
+}
+
+tbody td {
+    border-bottom: 1px solid var(--border);
+    padding: 8px 10px;
+}
+
+.document-box {
+    width: 100%;
+    max-height: 70vh;
+    /* дэлгэцийн өндөрт тохируулах */
+    overflow-y: auto;
+    overflow-x: auto;
+    /* vertical scroll гаргах */
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+.document-box table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+.pagination {
+    position: sticky;
+    bottom: 0;
+    background: var(--card);
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    border-top: 1px solid var(--border);
+    z-index: 10;
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="card">
   <div class="toolbar">
-    <label for="selected_date">Огноо:</label>
-    <input type="date" id="selected_date" value="{{ selected_date|default:None }}">
+    <label date-filter for="selected_date">Огноо:</label>
+    <input type="date" id="selected_date" value="{{ selected_date }}">
     <button id="fetchBtn" class="btn" type="button">Шүүх</button>
   </div>
 
   <h2>Шивсэн баримтын жагсаалт</h2>
 
   <div style="display: flex; gap: 20px; align-items: flex-start;">
-    <!-- Хүснэгт 1 -->
-    <div style="flex: 1;">
-        <h3>Бүх баримт</h3>
+ <!-- Хүснэгт 1 -->
+  <div style="flex: 1 1 0;">
+    <h3>Бүх баримт</h3>
+    <div  class="document-box" >
         <table border="1">
             <thead>
                 <tr>
@@ -43,10 +118,12 @@
             <tbody id="barimt-body"></tbody>
         </table>
     </div>
+  </div>
 
     <!-- Хүснэгт 2 -->
-    <div style="flex: 1;">
-        <h3>Сугалааны дугааргүй баримт</h3>
+    <div style="flex: 1 1 0;">
+    <h3>Сугалааны дугааргүй баримт</h3>
+    <div class="document-box">
         <table border="1">
             <thead>
                 <tr>
@@ -64,9 +141,21 @@
         </table>
     </div>
   </div>
+  </div>
+    </div>
+    <div class="pagination" id="pagination">
+        {% if has_prev %}
+            <a href="?selected_date={{ selected_date }}&page={{ page|add:"-1" }}">Өмнөх</a>
+        {% endif %}
 
-  <div class="pagination" id="pagination"></div>
-</div>
+        <span>Хуудас {{ page }} / {{ total_pages }}</span>
+
+        {% if has_next %}
+            <a href="?selected_date={{ selected_date }}&page={{ page|add:"1" }}">Дараах</a>
+        {% endif %}
+    </div>
+
+
 
 <script>
 async function fetchBarimt(date, page = 1) {
