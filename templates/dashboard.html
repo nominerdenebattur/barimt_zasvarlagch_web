@@ -1,251 +1,488 @@
+{# dashboard.html #}
 {% extends "base.html" %}
 {% block title %}Хянах{% endblock %}
 
 {% block extra_head %}
-<style>
-.card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
+    <style>
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, .04);
+            padding: 16px;
+        }
 
-.toolbar {
-    {#display: flex;#}
-    gap: 30px;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-}
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--brand);
+            background: var(--brand);
+            color: #fff;
+            cursor: pointer;
+            font-weight: 600;
+            transition: .15s ease;
+        }
 
-.date-filter {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-}
+        .btn:hover {
+            filter: brightness(0.95);
+        }
 
-h2{
-    font-size: 16px
-}
-h3 {
-    color: var(--text);
-    margin: 10px 0;
-    font-size: 14px
-}
+        .btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-table th, table td {
-    padding: 4px 6px; /* padding багасгах */
-    font-size: 12px;  /* текстийг жижиг болгох */
-}
-thead th {
-    background: var(--brand);
-    color: #fff;
-    padding: 10px;
-    position: sticky;
-    top: 0;
-}
+        h2 {
+            font-size: 16px;
+            margin: 0 0 6px
+        }
 
-tbody td {
-    border-bottom: 1px solid var(--border);
-    padding: 8px 10px;
-}
+        h3 {
+            font-size: 14px;
+            color: var(--text);
+            margin: 0 0 10px
+        }
 
-.document-box {
-    width: 100%;
-    max-height: 70vh;
-    /* дэлгэцийн өндөрт тохируулах */
-    overflow-y: auto;
-    overflow-x: auto;
-    /* vertical scroll гаргах */
-    border-radius: 10px;
-    border: 1px solid var(--border);
-}
-.document-box table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-    word-wrap: break-word;
-}
-.pagination {
-    position: sticky;
-    bottom: 0;
-    background: var(--card);
-    padding: 10px 0;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    border-top: 1px solid var(--border);
-    z-index: 10;
-}
-</style>
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .date-filter {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .date-filter input[type="date"] {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #fff;
+            outline: none;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .document-box {
+            max-height: 70vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #fff;
+            max-width: 100%;
+        }
+
+        .table-scroll {
+            overflow-x: hidden;
+            max-width: 100%;
+            position: relative;
+            z-index: 0;
+        }
+
+        .table-scroll table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            white-space: normal;
+            font-family: Arial, sans-serif;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            background: var(--brand);
+            color: #fff;
+            text-align: left;
+            padding: 8px 10px;
+            z-index: 1;
+        }
+
+        tbody td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            background: transparent;
+            font-size: 12px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        tbody tr:hover {
+            background: #f3f4f6
+        }
+
+        .row-return td {
+            background: #fff7cc !important;
+            color: #000 !important;
+        }
+
+        .row-missing td {
+            background: #ef4444 !important;
+            color: #fff !important;
+        }
+
+        .legend {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            font-size: 12px;
+            color: var(--muted);
+            user-select: none
+        }
+
+        .legend .chip {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            display: inline-block
+        }
+
+        .legend .chip-btn {
+            display: inline-flex;
+            gap: 6px;
+            align-items: center;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 6px;
+            transition: .12s ease;
+        }
+
+        .legend .chip-btn:hover {
+            background: #f5f5f5
+        }
+
+        .legend .chip-btn.active {
+            box-shadow: 0 0 0 2px var(--brand) inset;
+            background: #eef6ff
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            margin-top: 12px;
+            position: sticky;
+            bottom: 0;
+            background: var(--card);
+            border-top: 1px solid var(--border);
+            border-radius: 10px;
+        }
+
+        .pagination span {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .data-wrap {
+            position: relative;
+        }
+
+        .data-wrap .loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, .6);
+            backdrop-filter: blur(1px);
+            z-index: 30;
+            pointer-events: all;
+        }
+
+        .loading[aria-hidden="true"] {
+            display: none !important;
+        }
+
+        .spinner {
+            width: 28px;
+            height: 28px;
+            border: 3px solid #ddd;
+            border-top-color: var(--brand);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns:1fr;
+            }
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="card">
-  <div class="toolbar">
-    <label date-filter for="selected_date">Огноо:</label>
-    <input type="date" id="selected_date" value="{{ selected_date }}">
-    <button id="fetchBtn" class="btn" type="button">Шүүх</button>
-  </div>
+    <div class="card">
+        <div class="toolbar">
+            <div class="date-filter">
+                <label for="selected_date">Огноо:</label>
+                <input type="date" id="selected_date" value="{{ selected_date }}">
+                <button id="fetchBtn" class="btn" type="button">Шүүх</button>
+            </div>
+            <h2>Шивсэн баримтын жагсаалт</h2>
+        </div>
 
-  <h2>Шивсэн баримтын жагсаалт</h2>
+        <div class="legend" id="legend" style="margin-bottom:10px">
+            <span class="chip-btn" data-filter="return"><i class="chip" style="background:#fff7cc"></i> Буцаалт (return)</span>
+            <span class="chip-btn" data-filter="missing"><i class="chip" style="background:#ef4444"></i> Сугалааны дугааргүй</span>
+            <span style="margin-left:4px">•</span>
+            <span class="chip-btn" data-filter="all" title="Бүгд">Бүгд</span>
+        </div>
 
-  <div style="display: flex; gap: 20px; align-items: flex-start;">
- <!-- Хүснэгт 1 -->
-  <div style="flex: 1 1 0;">
-    <h3>Бүх баримт</h3>
-    <div  class="document-box" >
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>№</th>
-                    <th>storeid</th>
-                    <th>receiptno</th>
-                    <th>pos_api_lottery</th>
-                    <th>pos_api_bill_id</th>
-                    <th>pos_api_sub_bill_id</th>
-                    <th>grosssale</th>
-                    <th>is_return</th>
-                </tr>
-            </thead>
-            <tbody id="barimt-body"></tbody>
-        </table>
-    </div>
-  </div>
+        <div class="grid">
+            <section class="card data-wrap" id="wrap-barimt" style="padding:12px">
+                <div class="loading" id="barimt-loading" aria-hidden="true">
+                    <div class="spinner"></div>
+                </div>
+                <h3>Бүх баримт</h3>
+                <div class="document-box" id="box-barimt">
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>storeid</th>
+                                <th>receiptno</th>
+                                <th>pos_api_lottery</th>
+                                <th>pos_api_bill_id</th>
+                                <th>pos_api_sub_bill_id</th>
+                                <th>grosssale</th>
+                            </tr>
+                            </thead>
+                            <tbody id="barimt-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
-    <!-- Хүснэгт 2 -->
-    <div style="flex: 1 1 0;">
-    <h3>Сугалааны дугааргүй баримт</h3>
-    <div class="document-box">
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>№</th>
-                    <th>storeid</th>
-                    <th>receiptno</th>
-                    <th>pos_api_lottery</th>
-                    <th>pos_api_bill_id</th>
-                    <th>pos_api_sub_bill_id</th>
-                    <th>grosssale</th>
-                    <th>is_return</th>
-                </tr>
-            </thead>
-            <tbody id="lottery-body"></tbody>
-        </table>
+            <section class="card data-wrap" id="wrap-lottery" style="padding:12px">
+                <div class="loading" id="lottery-loading" aria-hidden="true">
+                    <div class="spinner"></div>
+                </div>
+                <h3>Сугалааны дугааргүй баримт</h3>
+                <div class="document-box" id="box-lottery">
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>storeid</th>
+                                <th>receiptno</th>
+                                <th>pos_api_lottery</th>
+                                <th>pos_api_bill_id</th>
+                                <th>pos_api_sub_bill_id</th>
+                                <th>grosssale</th>
+                            </tr>
+                            </thead>
+                            <tbody id="lottery-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
     </div>
-  </div>
-  </div>
-    </div>
+
     <div class="pagination" id="pagination">
         {% if has_prev %}
-            <a href="?selected_date={{ selected_date }}&page={{ page|add:"-1" }}">Өмнөх</a>
+            <button class="btn" onclick="fetchBarimt('{{ selected_date }}', {{ page|add:'-1' }})">Өмнөх</button>
         {% endif %}
-
         <span>Хуудас {{ page }} / {{ total_pages }}</span>
-
         {% if has_next %}
-            <a href="?selected_date={{ selected_date }}&page={{ page|add:"1" }}">Дараах</a>
+            <button class="btn" onclick="fetchBarimt('{{ selected_date }}', {{ page|add:'1' }})">Дараах</button>
         {% endif %}
     </div>
 
+    <script>
+        let isLoading = false;
+        let cachedItems = [];
+        let cachedMissing = [];
+        let lastPageStartIndex = 0;
+        let currentFilter = 'all';
 
+        const prevNextButtons = () => Array.from(document.querySelectorAll('#pagination .btn, #fetchBtn'));
 
-<script>
-async function fetchBarimt(date, page = 1) {
-    const apiUrl = "https://pp.cumongol.mn/api/bill/";
-    const payload = { date, page };
+        function showLoading(which, on) {
+            const overlay = document.getElementById(which === 'barimt' ? 'barimt-loading' : 'lottery-loading');
+            const wrap = document.getElementById(which === 'barimt' ? 'wrap-barimt' : 'wrap-lottery');
+            if (!overlay || !wrap) return;
 
-    try {
-        const response = await fetch(apiUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-        const data = await response.json();
-        const barimtuud = data.items || [];
-        const lottery_hooson_barimtuud = barimtuud.filter(b => !b.pos_api_bill_id);
-
-        const barimtBody = document.getElementById("barimt-body");
-        barimtBody.innerHTML = "";
-        barimtuud.forEach((item, index) => {
-            const row = document.createElement("tr");
-            if (item.is_return) row.style.backgroundColor = "yellow";
-            if (!item.pos_api_bill_id) row.style.backgroundColor = "red";
-            row.innerHTML = `
-                <td>${index+1}</td>
-                <td>${item.storeid || ""}</td>
-                <td>${item.receiptno || ""}</td>
-                <td>${item.pos_api_lottery || ""}</td>
-                <td>${item.pos_api_bill_id || ""}</td>
-                <td>${item.pos_api_sub_bill_id || ""}</td>
-                <td>${item.grosssale || ""}</td>
-                <td>${item.is_return}</td>
-            `;
-            barimtBody.appendChild(row);
-        });
-
-        const lotteryBody = document.getElementById("lottery-body");
-        lotteryBody.innerHTML = "";
-        lottery_hooson_barimtuud.forEach((item, index) => {
-            const row = document.createElement("tr");
-            row.style.backgroundColor = "red";
-            row.style.color = "white";
-            row.innerHTML = `
-                <td>${index+1}</td>
-                <td>${item.storeid || ""}</td>
-                <td>${item.receiptno || ""}</td>
-                <td>${item.pos_api_lottery || ""}</td>
-                <td>${item.pos_api_bill_id || ""}</td>
-                <td>${item.pos_api_sub_bill_id || ""}</td>
-                <td>${item.grosssale || ""}</td>
-                <td>${item.is_return}</td>
-            `;
-            lotteryBody.appendChild(row);
-        });
-
-        // Pagination
-        const pagination = document.getElementById("pagination");
-        pagination.innerHTML = "";
-        if (data.has_prev) {
-            const prev = document.createElement("button");
-            prev.textContent = "Өмнөх";
-            prev.onclick = () => fetchBarimt(date, page-1);
-            pagination.appendChild(prev);
-        }
-        const span = document.createElement("span");
-        span.textContent = ` ${page} / ${data.total_pages} `;
-        pagination.appendChild(span);
-        if (data.has_next) {
-            const next = document.createElement("button");
-            next.textContent = "Дараах";
-            next.onclick = () => fetchBarimt(date, page+1);
-            pagination.appendChild(next);
+            if (on) {
+                overlay.style.display = 'flex';
+                overlay.setAttribute('aria-hidden', 'false');
+                wrap.setAttribute('aria-busy', 'true');
+            } else {
+                overlay.style.display = 'none';
+                overlay.setAttribute('aria-hidden', 'true');
+                wrap.removeAttribute('aria-busy');
+            }
         }
 
-    } catch (err) {
-        console.error("API Error:", err);
-    }
-}
+        function makeRow(item, idx) {
+            const tr = document.createElement("tr");
+            if (String(item.is_return).toLowerCase() === "true") {
+                tr.classList.add("row-return");
+            }
+            if (!item.pos_api_bill_id) {
+                tr.classList.add("row-missing");
+            }
+            tr.innerHTML = `
+    <td>${idx}</td>
+    <td>${item.storeid ?? ""}</td>
+    <td>${item.receiptno ?? ""}</td>
+    <td>${item.pos_api_lottery ?? ""}</td>
+    <td>${item.pos_api_bill_id ?? ""}</td>
+    <td>${item.pos_api_sub_bill_id ?? ""}</td>
+    <td>${item.grosssale ?? ""}</td>`;
+            return tr;
+        }
 
-// Event
-document.addEventListener("DOMContentLoaded", () => {
-    const selectedDate = document.getElementById("selected_date").value;
-    if(selectedDate) fetchBarimt(selectedDate, 1);
+        function renderBarimt(list) {
+            const body = document.getElementById("barimt-body");
+            body.innerHTML = "";
+            list.forEach((item, i) => {
+                body.appendChild(makeRow(item, (lastPageStartIndex || 0) + i + 1));
+            });
+        }
 
-    document.getElementById("fetchBtn").addEventListener("click", () => {
-        const date = document.getElementById("selected_date").value;
-        fetchBarimt(date, 1);
-    });
-});
-</script>
+        function renderLottery() {
+            const body = document.getElementById("lottery-body");
+            body.innerHTML = "";
+            cachedMissing.forEach((item, i) => {
+                const tr = document.createElement("tr");
+                if (String(item.is_return).toLowerCase() === "true") {
+                    tr.classList.add("row-return");
+                }
+                tr.classList.add("row-missing");
+                tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${item.storeid ?? ""}</td>
+      <td>${item.receiptno ?? ""}</td>
+      <td>${item.pos_api_lottery ?? ""}</td>
+      <td>${item.pos_api_bill_id ?? ""}</td>
+      <td>${item.pos_api_sub_bill_id ?? ""}</td>
+      <td>${item.grosssale ?? ""}</td>`;
+                body.appendChild(tr);
+            });
+        }
+
+        async function fetchBarimt(date, page = 1) {
+            if (isLoading) return;
+            isLoading = true;
+
+            const apiUrl = "https://pp.cumongol.mn/api/bill/";
+            const payload = {date, page};
+
+            prevNextButtons().forEach(b => b.disabled = true);
+            showLoading('barimt', true);
+            showLoading('lottery', true);
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                const data = await response.json();
+                lastPageStartIndex = data.page_start_index || 0;
+                cachedItems = data.items || [];
+                cachedMissing = cachedItems.filter(b => !b.pos_api_bill_id);
+
+                renderBarimt(cachedItems);
+                renderLottery();
+
+                // pagination
+                const pager = document.getElementById("pagination");
+                pager.innerHTML = "";
+                const prevBtn = document.createElement("button");
+                prevBtn.className = "btn";
+                prevBtn.textContent = "Өмнөх";
+                prevBtn.disabled = !data.has_prev;
+                prevBtn.onclick = () => fetchBarimt(date, page - 1);
+                pager.appendChild(prevBtn);
+
+                const span = document.createElement("span");
+                span.textContent = `Хуудас ${page} / ${data.total_pages || 1}`;
+                pager.appendChild(span);
+
+                const nextBtn = document.createElement("button");
+                nextBtn.className = "btn";
+                nextBtn.textContent = "Дараах";
+                nextBtn.disabled = !data.has_next;
+                nextBtn.onclick = () => fetchBarimt(date, page + 1);
+                pager.appendChild(nextBtn);
+
+                setLegendActive('all');
+                currentFilter = 'all';
+
+            } catch (e) {
+                console.error("API Error:", e);
+            } finally {
+                showLoading('barimt', false);
+                showLoading('lottery', false);
+                prevNextButtons().forEach(b => b.disabled = false);
+                isLoading = false;
+            }
+        }
+
+
+        function setLegendActive(which) {
+            document.querySelectorAll('#legend .chip-btn').forEach(el => {
+                el.classList.toggle('active', el.dataset.filter === which);
+            });
+        }
+
+        function applyFilter(which) {
+            currentFilter = (currentFilter === which) ? 'all' : which;
+            setLegendActive(currentFilter);
+
+            let list = cachedItems;
+            if (currentFilter === 'return') {
+                list = cachedItems.filter(it => String(it.is_return).toLowerCase() === 'true');
+            } else if (currentFilter === 'missing') {
+                list = cachedMissing.slice();
+            }
+            renderBarimt(list);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById("fetchBtn").addEventListener("click", () => {
+                const date = document.getElementById("selected_date").value;
+                if (!date) {
+                    alert("Огноо сонгоно уу.");
+                    return;
+                }
+                fetchBarimt(date, 1);
+            });
+
+            document.getElementById('legend').addEventListener('click', (e) => {
+                const target = e.target.closest('.chip-btn');
+                if (!target) return;
+                const which = target.dataset.filter;
+                applyFilter(which);
+            });
+        });
+    </script>
 {% endblock %}
