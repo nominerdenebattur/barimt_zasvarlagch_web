@@ -139,3 +139,5 @@ MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# AUTH_USER_MODEL = 'barimt_zasvarlagch_app.CustomUser'

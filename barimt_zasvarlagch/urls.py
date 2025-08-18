@@ -29,6 +29,9 @@ urlpatterns = [
     # path('register/', views.register_view, name='register'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('compare/', views.compare_view, name='compare'),
+    path('delete/', views.delete_view, name='delete'),
+    path('barimt/delete/<int:barimt_id>/', views.delete_view, name='delete_barimt'),
+
 ]
 
 if settings.DEBUG:

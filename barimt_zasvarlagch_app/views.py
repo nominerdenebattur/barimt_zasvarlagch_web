@@ -22,16 +22,22 @@ def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '').strip()
-        print(f"Trying login with: {username} / {password}")
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('zasvarlah')  # login амжилттай бол шилжих хуудсыг тохируулна
+
+            # Group-аар redirect
+            if user.groups.filter(name='Hyanah').exists():
+                return redirect('dashboard')
+            elif user.groups.filter(name='Zasvarlah').exists():
+                return redirect('zasvarlah')
+            elif user.groups.filter(name='Tailan').exists():
+                return redirect('compare')
+            # else:
+            #     return render(request, 'logIn.html', {'error': 'Тухайн хэрэглэгч ямар нэг group-д хамаарахгүй байна'})
         else:
-            error = "Нэвтрэх мэдээлэл буруу байна"
-            return render(request, 'logIn.html', {'error': error})
-    else:
-        return render(request, 'logIn.html')
+            return render(request, 'logIn.html', {'error': 'Нэвтрэх мэдээлэл буруу байна'})
+    return render(request, 'logIn.html')
 
 def logout_view(request):
     logout(request)
@@ -308,3 +314,39 @@ def compare_view(request):
         'selected_date': selected_date,
     }
     return render(request, 'compare.html', context)
+
+def user_groups(request):
+    if request.user.is_authenticated:
+        return {
+            'is_hyanah': request.user.groups.filter(name='Hyanah').exists(),
+            'is_zasvarlah': request.user.groups.filter(name='Zasvarlah').exists(),
+            'is_tailan': request.user.groups.filter(name='Tailan').exists(),
+        }
+    return {}
+from django.shortcuts import render, redirect, get_object_or_404
+
+def delete_view(request):
+    deleted_barimts = []
+
+    if request.method == "POST":
+        bill_id = request.POST.get("billId")
+        date = request.POST.get("date")
+
+        if not bill_id and not date:
+            messages.error(request, "Та дор хаяж нэг шалгуур оруулна уу!")
+            return redirect("delete")
+
+        query = Barimt.objects.all()
+
+        if bill_id:
+            query = query.filter(billId=bill_id)
+        if date:
+            query = query.filter(created__date=date)
+
+        deleted_barimts = list(query)
+        query.delete()
+
+    return render(request, "delete.html", {
+        "barimts": deleted_barimts,
+        "success": bool(deleted_barimts)
+    })

@@ -64,6 +64,10 @@
           <button type="button" class="btn" onclick="location.href='{% url 'compare' %}'">Тайлан</button>
         {% endif %}
 
+        {% if is_delete %}
+          <button type="button" class="btn" onclick="location.href='{% url 'delete' %}'">Устгах</button>
+        {% endif %}
+
         <form method="POST" action="{% url 'login' %}" style="display:inline;">
           {% csrf_token %}
           <button type="submit">Гарах</button>

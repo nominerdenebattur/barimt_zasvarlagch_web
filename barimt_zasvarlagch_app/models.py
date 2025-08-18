@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import AbstractUser
 
 
 class Barimt(models.Model):
@@ -14,3 +15,8 @@ class Barimt(models.Model):
     # ?
     def __str__(self):
         return f"{self.billId or 'NoBill'} - {self.totalAmount}"
+
+# class CustomUser(AbstractUser):
+#     is_zasvarlah = models.BooleanField(default=False)
+#     is_hyanah = models.BooleanField(default=False)
+#     is_tailan = models.BooleanField(default=False)

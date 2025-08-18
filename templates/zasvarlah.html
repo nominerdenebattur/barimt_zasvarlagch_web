@@ -163,7 +163,7 @@
 
     <div class="form-group" style="position: relative;">
       <label for="branchName">Салбарын нэр</label>
-      <input type="text" id="branchName" autocomplete="off" placeholder="Жишээ: Баруун" >
+      <input type="text" id="branchName" autocomplete="off" placeholder="Жишээ: Дархан" >
       <ul id="suggestions"></ul>
     </div>
 
@@ -196,12 +196,13 @@
         <thead>
           <tr>
             <th scope="col">№</th>
-            <th scope="col">Bill ID</th>
+            <th scope="col">ДДТД</th>
             <th scope="col">Нийт дүн</th>
             <th scope="col">Дэлгүүр</th>
-            <th scope="col">Reg</th>
-            <th scope="col">Lottery</th>
+            <th scope="col">Регистерийн дугаар</th>
+            <th scope="col">Сугалаа</th>
             <th scope="col">Огноо</th>
+            <th scope="col">Баримт шивсэн хэрэглэгч</th>
           </tr>
         </thead>
         <tbody>
@@ -214,6 +215,7 @@
               <td>{{ barimt.companyReg }}</td>
               <td>{{ barimt.lottery }}</td>
               <td>{{ barimt.created }}</td>
+{#              <td>{{ barimt.user }}</td>#}
             </tr>
           {% empty %}
             <tr>
