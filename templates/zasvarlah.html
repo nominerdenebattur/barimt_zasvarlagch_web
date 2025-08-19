@@ -98,8 +98,8 @@
     .submit-section {
       display: flex;
       justify-content: center;
-      padding: 20px 24px 40px;
-    }
+      padding: 20px 12px;
+
     /* Autocomplete list */
     #suggestions {
       list-style: none;
@@ -136,6 +136,10 @@
     .submit-section .btn {
       width: 100%;
     }
+    .chip-btn.active {
+        font-weight: 700;
+        text-decoration: underline;
+    }
   }
 </style>
 {% endblock %}
@@ -163,7 +167,7 @@
 
     <div class="form-group" style="position: relative;">
       <label for="branchName">Салбарын нэр</label>
-      <input type="text" id="branchName" autocomplete="off" placeholder="Жишээ: Дархан" >
+      <input type="text" id="branchName" autocomplete="off" placeholder="Жишээ: Төв шуудан" >
       <ul id="suggestions"></ul>
     </div>
 
@@ -173,6 +177,11 @@
     </div>
 
     <div class="helper">Санамж: Салбарын нэр дээр дарвал дэлгүүрийн дугаар бөглөгдөнө.</div>
+
+    <div class="submit-section">
+      <button id="generateBtn" class="btn" type="button">Баримт үүсгэх</button>
+    </div>
+
   </section>
 
   <!-- Баримтын жагсаалт -->
@@ -185,6 +194,12 @@
           <input type="date" name="selected_date" id="selected_date" value="{{ selected_date|default:'' }}" >
           <button type="submit" class="btn">Шүүх</button>
         </form>
+
+          <div class="legend" id="legend" style="margin-bottom:10px">
+            <span class="chip-btn" data-filter="deleted"><i class="chip" style="background:#ef4444"></i> Устгагдсан баримтууд </span>
+            <span style="margin-left:4px">•</span>
+            <span class="chip-btn" data-filter="all" title="Бүгд">Бүгд</span>
+        </div>
       </div>
       <div class="right">
         <button id="exportBtn" class="btn" type="button">Баримт татаж авах</button>
@@ -203,11 +218,12 @@
             <th scope="col">Сугалаа</th>
             <th scope="col">Огноо</th>
             <th scope="col">Баримт шивсэн хэрэглэгч</th>
+            <th scope="col">Устгагдсан баримт эсэх</th>
           </tr>
         </thead>
         <tbody>
           {% for barimt in barimtuud %}
-            <tr>
+            <tr {% if barimt.is_deleted %}style="background-color: #f8d7da;"{% endif %}>
               <td>{{ forloop.counter }}</td>
               <td>{{ barimt.billId }}</td>
               <td>{{ barimt.totalAmount }}</td>
@@ -215,7 +231,8 @@
               <td>{{ barimt.companyReg }}</td>
               <td>{{ barimt.lottery }}</td>
               <td>{{ barimt.created }}</td>
-{#              <td>{{ barimt.user }}</td>#}
+              <td>{{ barimt.created_by }}</td>
+              <td>{{ barimt.is_deleted|yesno:"Тийм,Үгүй" }}</td>
             </tr>
           {% empty %}
             <tr>
@@ -227,14 +244,14 @@
     </div>
   </section>
 </main>
-
-<div class="submit-section">
-  <button id="generateBtn" class="btn" type="button">Баримт үүсгэх</button>
-</div>
 {% endblock %}
 
 {% block extra_js %}
-    <script>
+    <script id="barimtuud-data" type="application/json">
+        {{ barimtuud_json|safe }}
+    </script>
+
+<script>
       // Автоматаар баримтын төрөл солих (companyReg бөглөгдвөл 3, хоосон бол 1)
       document.getElementById('companyReg').addEventListener('input', function () {
         const hasReg = this.value.trim().length > 0;
@@ -370,5 +387,48 @@
 
         window.location.href = `/export_excel/?${qs}`;
       });
+
+    let cachedBarimtuud = JSON.parse(document.getElementById('barimtuud-data').textContent);
+
+    function renderBarimt(list) {
+        const tbody = document.querySelector('.document-box table tbody');
+        tbody.innerHTML = '';
+        list.forEach((barimt, idx) => {
+            const tr = document.createElement('tr');
+            if (barimt.is_deleted) tr.style.backgroundColor = '#f8d7da';
+            tr.innerHTML = `
+                <td>${idx + 1}</td>
+                <td>${barimt.billId}</td>
+                <td>${barimt.totalAmount}</td>
+                <td>${barimt.storeNo}</td>
+                <td>${barimt.companyReg || '-'}</td>
+                <td>${barimt.lottery || '-'}</td>
+                <td>${barimt.created || '-'}</td>
+                <td>${barimt.created_by || '-'}</td>
+                <td>${barimt.is_deleted ? 'Тийм' : 'Үгүй'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Filter товч дарахад ажиллах
+    document.getElementById('legend').addEventListener('click', (e) => {
+        const target = e.target.closest('.chip-btn');
+        if (!target) return;
+        const which = target.dataset.filter;
+
+        // Active class тохируулах
+        document.querySelectorAll('#legend .chip-btn').forEach(el => {
+            el.classList.toggle('active', el === target);
+        });
+
+        let list = cachedBarimtuud;
+        if (which === 'deleted') {
+            list = cachedBarimtuud.filter(b => b.is_deleted);
+        }
+        renderBarimt(list);
+    });
+
+    renderBarimt(cachedBarimtuud);
     </script>
 {% endblock %}

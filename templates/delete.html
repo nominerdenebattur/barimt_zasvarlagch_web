@@ -11,22 +11,14 @@
     align-items: start;
   }
   .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,.04);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.04);
   }
-  .form-section {
-      padding: 16px;
-      position: sticky;
-      top: 16px;
-  }
+  .form-section { padding: 16px; position: sticky; top: 16px; }
   .form-group { margin-bottom: 14px; }
-  .form-group label {
-    display: block;
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
+  .form-group label { display: block; font-weight: 700; margin-bottom: 6px; }
   .form-group input {
     width: 100%;
     padding: 10px 12px;
@@ -39,7 +31,6 @@
     border-color: var(--brand);
     box-shadow: 0 0 0 3px rgba(42,157,244,.15);
   }
-
   .document-section { padding: 16px; }
   .document-header {
     display: flex;
@@ -56,6 +47,13 @@
     border-radius: 10px;
     border: 1px solid var(--border);
   }
+  .date-filter input[type="date"] {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    outline: none;
+  }
   table {
     width: 100%;
     border-collapse: collapse;
@@ -70,11 +68,7 @@
     padding: 10px;
     z-index: 1;
   }
-  tbody td {
-    padding: 10px;
-    border-bottom: 1px solid var(--border);
-    background: #fff;
-  }
+  tbody td { padding: 10px; border-bottom: 1px solid var(--border); background: #fff; }
   tbody tr:hover { background: #f3f4f6; }
   .btn-delete {
     padding: 6px 12px;
@@ -86,23 +80,15 @@
     font-size: 14px;
   }
   .btn-delete:hover { background: #dc2626; }
-
   .helper {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 6px;
-      margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+    margin-bottom: 12px;
   }
-  .document-header .left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-  }
+  .document-header .left { display: flex; align-items: center; gap: 12px; }
   @media (max-width: 900px) {
-    main {
-      grid-template-columns: 1fr;
-      padding: 20px 16px;
-    }
+    main { grid-template-columns: 1fr; padding: 20px 16px; }
   }
 </style>
 {% endblock %}
@@ -112,30 +98,26 @@
   <!-- Баримт устгах form -->
   <section class="form-section card">
     <h3>Баримт устгах</h3>
-    <form method="POST" action="{% url 'delete' %}">
+    <form class="delete-form">
       {% csrf_token %}
       <div class="form-group">
         <label for="billId">ДДТД</label>
         <input type="text" name="billId" id="billId" placeholder="Ж: 077100185651001093540098210003682">
       </div>
-
-        <div class="form-group">
-          <label for="date">Огноо</label>
-          <input type="text" name="date" id="date" placeholder="Ж: 2025/08/18">
-        </div>
-
-      <div class="form-group" style="position: relative;">
-          <label for="branchName">Салбарын нэр</label>
-          <input type="text" id="branchName" autocomplete="off" placeholder="Ж: Дархан" >
-          <ul id="suggestions"></ul>
+      <div class="form-group">
+        <label for="date">Огноо</label>
+        <input type="text" name="date" id="date" placeholder="Ж: 2025-08-18">
       </div>
-
-        <div class="form-group">
-          <label for="storeId">Дэлгүүрийн дугаар</label>
-          <input type="text" name="storeId" id="storeId" placeholder="Салбар сонгоход автоматаар бөглөгдөнө">
-        </div>
-
-    <div class="helper">Санамж: Салбарын нэр дээр дарвал дэлгүүрийн дугаар бөглөгдөнө. Эсвэл дэлгүүрийн дугаараа оруулж болно.</div>
+      <div class="form-group" style="position: relative;">
+        <label for="branchName">Салбарын нэр</label>
+        <input type="text" id="branchName" autocomplete="off" placeholder="Ж: Төв шуудан" >
+        <ul id="suggestions"></ul>
+      </div>
+      <div class="form-group">
+        <label for="storeId">Дэлгүүрийн дугаар</label>
+        <input type="text" name="storeId" id="storeId" placeholder="Салбар сонгоход автоматаар бөглөгдөнө">
+      </div>
+      <div class="helper">Санамж: Салбарын нэр дээр дарвал дэлгүүрийн дугаар бөглөгдөнө. Эсвэл дэлгүүрийн дугаараа оруулж болно.</div>
       <button type="submit" class="btn-delete">Устгах</button>
     </form>
   </section>
@@ -143,45 +125,45 @@
   <!-- Устгагдсан баримтын жагсаалт -->
   <section class="document-section card">
     <div class="document-header">
-        <div class="left">
+      <div class="left">
         <h3 class="doc-title">Устгагдсан баримт</h3>
-        <form method="GET" action="" class="date-filter">
+        <form method="GET" class="date-filter">
           <label for="selected_date">Огноо:</label>
-          <input type="date" name="selected_date" id="selected_date" value="{{ selected_date|default:'' }}" >
+          <input type="date" name="selected_date" id="selected_date" value="{{ selected_date|default:'' }}">
           <button type="submit" class="btn">Шүүх</button>
         </form>
-        </div>
+      </div>
     </div>
     <div class="document-box">
       <table>
         <thead>
           <tr>
-            <th scope="col">№</th>
-            <th scope="col">ДДТД</th>
-            <th scope="col">Нийт дүн</th>
-            <th scope="col">Дэлгүүр</th>
-            <th scope="col">Регистерийн дугаар</th>
-            <th scope="col">Сугалаа</th>
-            <th scope="col">Огноо</th>
-            <th scope="col">Баримт шивсэн хэрэглэгч</th>
+            <th>№</th>
+            <th>ДДТД</th>
+            <th>Нийт дүн</th>
+            <th>Дэлгүүр</th>
+            <th>Регистерийн дугаар</th>
+            <th>Сугалаа</th>
+            <th>Огноо</th>
+            <th>Баримт устгасан хэрэглэгч</th>
+            <th>Баримт устгагдсан огноо</th>
           </tr>
         </thead>
         <tbody>
           {% for barimt in deleted_barimts %}
           <tr>
-              <td>{{ forloop.counter }}</td>
-              <td>{{ barimt.billId }}</td>
-              <td>{{ barimt.totalAmount }}</td>
-              <td>{{ barimt.storeNo }}</td>
-              <td>{{ barimt.companyReg }}</td>
-              <td>{{ barimt.lottery }}</td>
-              <td>{{ barimt.created }}</td>
-{#              <td>{{ barimt.user }}</td>#}
+            <td>{{ forloop.counter }}</td>
+            <td>{{ barimt.billId }}</td>
+            <td>{{ barimt.totalAmount }}</td>
+            <td>{{ barimt.storeNo }}</td>
+            <td>{{ barimt.companyReg }}</td>
+            <td>{{ barimt.lottery }}</td>
+            <td>{{ barimt.created }}</td>
+            <td>{{ barimt.deleted_by }}</td>
+            <td>{{ barimt.deleted_at }}</td>
           </tr>
           {% empty %}
-          <tr>
-            <td colspan="5">Одоогоор устгасан баримт алга байна.</td>
-          </tr>
+          <tr><td colspan="8">Одоогоор устгасан баримт алга байна.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -189,21 +171,35 @@
   </section>
 </main>
 {% endblock %}
+
 {% block extra_js %}
 <script>
+  // ====== CSRF token ======
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i=0; i<cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
   // ====== Салбар хайлт (autocomplete) ======
   const branchInput = document.getElementById('branchName');
   const suggestionList = document.getElementById('suggestions');
   const storeIdInput = document.getElementById('storeId');
-
-  // Debounce helper
   let debounceTimer = null;
   function debounce(fn, delay) {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(fn, delay);
   }
-
-  // autocomplete (2-с дээш үсэг бичсэн үед ажиллана)
   branchInput?.addEventListener('input', function () {
     const q = branchInput.value.trim();
     if (q.length < 2) {
@@ -214,61 +210,60 @@
       fetch('https://pp.cumongol.mn/api/list-biz/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bizloc_nm: q }) // json format
+        body: JSON.stringify({ bizloc_nm: q })
       })
-        .then(r => r.json())
-        .then(data => {
-          suggestionList.innerHTML = '';
-          const results = (data && data.results) ? data.results : [];
-          if (!results.length) return;
-
-          results.forEach(item => {
-            const li = document.createElement('li');
-            li.textContent = `${item.bizloc_nm}  —  ${item.bizloc_cd}`;
-            li.dataset.code = item.bizloc_cd;
-            li.addEventListener('click', () => {
-              branchInput.value = item.bizloc_nm;
-              storeIdInput.value = item.bizloc_cd;
-              suggestionList.innerHTML = '';
-            });
-            suggestionList.appendChild(li);
+      .then(r => r.json())
+      .then(data => {
+        suggestionList.innerHTML = '';
+        const results = (data && data.results) ? data.results : [];
+        results.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = `${item.bizloc_nm}  —  ${item.bizloc_cd}`;
+          li.dataset.code = item.bizloc_cd;
+          li.addEventListener('click', () => {
+            branchInput.value = item.bizloc_nm;
+            storeIdInput.value = item.bizloc_cd;
+            suggestionList.innerHTML = '';
           });
-        })
-        .catch(err => {
-          console.error('API request error:', err);
-          suggestionList.innerHTML = '<li style="color:red;">Алдаа гарлаа</li>';
+          suggestionList.appendChild(li);
         });
-    }, 300); // хэрэглэгч бичихээ больсноос 300ms дараа fetch ажиллана
+      })
+      .catch(err => {
+        console.error('API request error:', err);
+        suggestionList.innerHTML = '<li style="color:red;">Алдаа гарлаа</li>';
+      });
+    }, 300);
   });
-
-  // гадуур дарахад жагсаалт хаах
   document.addEventListener('click', (e) => {
     if (!e.target.closest('#suggestions') && e.target !== branchInput) {
       suggestionList.innerHTML = '';
     }
   });
 
-  // ===== Баримт устгах үед баталгаажуулах =====
-  const deleteForm = document.querySelector("form.delete-form");
-  deleteForm?.addEventListener("submit", function (e) {
-    const billId = document.getElementById("billId")?.value.trim();
-    const date = document.getElementById("date")?.value.trim();
+  // ====== Баримт устгах submit ======
+const deleteForm = document.querySelector("form.delete-form");
+deleteForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const billId = document.getElementById("billId").value.trim();
+    const date = document.getElementById("date").value.trim();
+    const storeId = document.getElementById("storeId").value.trim();
 
-    if (!billId) {
-      alert("ДДТД оруулна уу.");
-      e.preventDefault();
-      return;
-    }
-    if (!date) {
-      alert("Огноо оруулна уу.");
-      e.preventDefault();
-      return;
+    if (!billId || !date || !storeId) {
+        alert("Бүх талбаруудыг бөглөнө үү.");
+        return;
     }
 
-    if (!confirm(`Баримт устгахад итгэлтэй байна уу?\nДДТД: ${billId}\nОгноо: ${date || '-'}`)) {
-      e.preventDefault();
-      alert("Та мэдээллээ шалгаад дахин оролдоно уу.");
-    }
-  });
+    fetch("{% url 'delete' %}", {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrftoken  // CSRF token шаардлагатай
+        },
+        body: JSON.stringify({ billId, date, storeId })
+    })
+    .then(res => res.json())
+    .then(data => alert(data.message))
+    .catch(err => console.error(err));
+});
 </script>
 {% endblock %}

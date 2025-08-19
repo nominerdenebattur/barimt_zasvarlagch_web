@@ -17,6 +17,7 @@ from django.shortcuts import render, redirect
 from django.db.models import Q
 import certifi
 from django.contrib.auth.decorators import login_required, permission_required
+from django.views.decorators.csrf import csrf_exempt
 
 def login_view(request):
     if request.method == 'POST':
@@ -197,7 +198,13 @@ def ebarimt_generate(request):
     else:
         return JsonResponse({"status": "failed", "message": "API call unsuccessful"}, status=500)
 
-
+def barimt_list(request):
+    barimtuud = Barimt.objects.all()
+    barimtuud_json = serializers.serialize('json', barimtuud)
+    return render(request, 'zasvarlah.html', {
+        'barimtuud_json': barimtuud_json,
+        'selected_date': request.GET.get('selected_date', ''),
+    })
 # excel file-aar tataj avah heseg
 def export_excel(request):
     # jishee data (frontoos irsen ugugdliig ashiglana)
@@ -325,28 +332,57 @@ def user_groups(request):
     return {}
 from django.shortcuts import render, redirect, get_object_or_404
 
+@csrf_exempt
 def delete_view(request):
-    deleted_barimts = []
+    if request.method in ["POST", "DELETE"]:
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"status": "error", "message": "JSON буруу байна."})
 
-    if request.method == "POST":
-        bill_id = request.POST.get("billId")
-        date = request.POST.get("date")
+        bill_id = data.get("billId")
+        date = data.get("date")
+        store = data.get("storeId")
 
-        if not bill_id and not date:
-            messages.error(request, "Та дор хаяж нэг шалгуур оруулна уу!")
-            return redirect("delete")
+        store_str = str(store).lstrip('0') or '0'
+        store_num = int(store_str)
+        store_param = store_str
 
-        query = Barimt.objects.all()
+        if not bill_id or not date or not store:
+            return JsonResponse({"status": "error", "message": "Бүх талбар шаардлагатай."})
 
-        if bill_id:
-            query = query.filter(billId=bill_id)
-        if date:
-            query = query.filter(created__date=date)
+        base_ip = "10.10.90.234" if store_num >= 450 else "10.10.90.233"
+        url = f"http://{base_ip}:9{store_param}/rest/receipt"
 
-        deleted_barimts = list(query)
-        query.delete()
+        print(url)
 
-    return render(request, "delete.html", {
-        "barimts": deleted_barimts,
-        "success": bool(deleted_barimts)
+        payload = {
+            "id": bill_id,
+            "date": str(barimt.created_at)
+        }
+        resp = requests.delete(url, json=payload)
+
+        print(resp.json())
+
+        if resp.status_code == 200:
+            return JsonResponse({"status": "success", "message": "Баримт амжилттай устгагдлаа."})
+        else:
+            return JsonResponse({"status": "error", "message": f"API алдаа: {resp.status_code}"})
+
+    # GET хүсэлт → устгагдсан баримтуудыг render хийх
+    selected_date = request.GET.get('selected_date')
+    deleted_barimts = Barimt.objects.filter(is_deleted=True).order_by('-id')
+
+    if selected_date:
+        try:
+            date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
+            start_datetime = datetime.combine(date_obj, datetime.min.time())
+            end_datetime = start_datetime + timedelta(days=1)
+            deleted_barimts = deleted_barimts.filter(created__gte=start_datetime, created__lt=end_datetime)
+        except ValueError:
+            pass
+
+    return render(request, 'delete.html', {
+        'deleted_barimts': deleted_barimts,
+        'selected_date': selected_date
     })
