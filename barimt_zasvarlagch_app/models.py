@@ -32,10 +32,48 @@ class Barimt(models.Model):
 #     subBillId = models.CharField(max_length=50, blank=True, null=True)
 #     lottery = models.CharField(max_length=50, blank=True, null=True)
 #     totalAmount = models.FloatField()
-#     companyReg = models.CharField(max_length=50, blank=True, null=True)
+#     companyReg = models.CharField(max_length=50, blank=T rue, null=True)
 #     storeNo = models.CharField(max_length=10)
 #     deleted_by = models.CharField(max_length=250)
 #     deleted_at = models.DateTimeField(auto_now_add=True)
 #
 #     def __str__(self):
 #         return f"{self.billId} - {self.deleted_by}"
+
+class Ebarimt_zadargaa_0(models.Model):
+    posSid = models.CharField(default=0, blank=True, null=True, max_length=500)
+    posRno = models.CharField(default=0, blank=True, null=True, max_length=500)
+    posRdate = models.CharField(default=0, blank=True, null=True, max_length=500)
+    posRamt = models.IntegerField(default=0)
+    citytax = models.IntegerField(default=0)
+    posVamt = models.IntegerField(default=0)
+    netAmt = models.IntegerField(default=0)
+    fromType = models.CharField(default=0, blank=True, null=True, max_length=500)
+    csmrRegNo = models.CharField(default=0, blank=True, null=True, max_length=500)
+    csmrName = models.CharField(default=0, blank=True, null=True, max_length=500)
+    posNo = models.IntegerField(default=0)
+    operatorName = models.CharField(default=0, blank=True, null=True, max_length=10)
+    districtCode = models.CharField(default=0, blank=True, null=True, max_length=10)
+    prParentRno = models.CharField(default=0, blank=True, null=True, max_length=10)
+
+    def __str__(self):
+        return self.posRno
+
+class Ebarimt_zadargaa_4(models.Model):
+        posSid = models.CharField(default=0, blank=True, null=True, max_length=10)
+        posRno = models.CharField(default=0, blank=True, null=True, max_length=10)
+        posRdate = models.CharField(default=0, blank=True, null=True, max_length=10)
+        posRamt = models.IntegerField(default=0)
+        citytax = models.IntegerField(default=0)
+        posVamt = models.IntegerField(default=0)
+        netAmt = models.IntegerField(default=0)
+        fromType = models.CharField(default=0, blank=True, null=True, max_length=10)
+        csmrRegNo = models.CharField(default=0, blank=True, null=True, max_length=10)
+        csmrName = models.CharField(default=0, blank=True, null=True, max_length=10)
+        posNo = models.IntegerField(default=0)
+        operatorName = models.CharField(default=0, blank=True, null=True, max_length=10)
+        districtCode = models.CharField(default=0, blank=True, null=True, max_length=10)
+        prParentRno = models.CharField(default=0, blank=True, null=True, max_length=10)
+
+        def __str__(self):
+            return self.posRno

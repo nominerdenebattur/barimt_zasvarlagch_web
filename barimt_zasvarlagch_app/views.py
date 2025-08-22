@@ -11,14 +11,17 @@ from django.shortcuts import redirect
 from django.contrib import messages
 from django.utils import timezone
 from datetime import datetime, timedelta
-
+from datetime import datetime, date
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.db.models import Q
 import certifi
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.csrf import csrf_exempt
-
+from requests.exceptions import HTTPError
+from django.core.management.base import BaseCommand
+from .models import Ebarimt_zadargaa_0
+from .models import Ebarimt_zadargaa_4
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
@@ -34,6 +37,8 @@ def login_view(request):
                 return redirect('zasvarlah')
             elif user.groups.filter(name='Tailan').exists():
                 return redirect('compare')
+            elif user.groups.filter(name='Delete').exists():
+                return redirect('delete')
             # else:
             #     return render(request, 'logIn.html', {'error': 'Тухайн хэрэглэгч ямар нэг group-д хамаарахгүй байна'})
         else:
@@ -301,24 +306,107 @@ def dashboard_view(request):
         "total_pages": total_pages
     })
 
+#API-аас баримт татаж, хадгалах функц
+def fetch_and_save_barimt(status, date):
+    token_url = "https://auth.itc.gov.mn/auth/realms/ITC/protocol/openid-connect/token"
+    token_payload = {
+        "client_id": "invoice",
+        "grant_type": "password",
+        "username": "ЖЮ00220821",
+        "password": "Saiko@0208"
+    }
+
+    service_url = "https://api.ebarimt.mn/api/tpi/receipt/getSalesTotalData"
+
+    attempts = 0
+    max_retries = 50
+    while attempts < max_retries:
+        try:
+            token_response = requests.post(token_url, data=token_payload)
+            token_response.raise_for_status()
+            access_token = token_response.json().get("access_token")
+
+            headers = {
+                "x-api-key": "ae7368b03a55e135398668d964b5176e3e7f9c4f",
+                "Authorization": f"Bearer {access_token}"
+            }
+
+            year, month, day = str(date.year), str(date.month), str(date.day)
+            request_payload = {
+                "year": year,
+                "month": month,
+                "day": day,
+                "status": status,
+                "startCount": 1,
+                "endCount": 250000
+            }
+
+            service_response = requests.post(service_url, headers=headers, json=request_payload)
+            service_response.raise_for_status()
+            data_list = response.json().get('data', {}).get('list', [])
+        except HTTPError as e:
+            print(f"HTTP алдаа: {e}")
+            attempts += 1
+            print(f"Оролдлого {attempts}/{max_retries}")
+
+            if attempts >= max_retries:
+                print(f"Хэт олон алдаа! Энэ өдрийг алгасна.")
+                break
+
+        except ValueError as e:
+            print(f"JSON алдаа: {e}")
+            break
+
+        current_date += datetime.timedelta(days=1)
+        print(f"\nДараагийн өдөр рүү шилжиж байна: {current_date}")
+
+        # Моделд хадгалах
+        if status == 0:
+            model_class = Ebarimt_zadargaa_0
+        else:
+            model_class = Ebarimt_zadargaa_4
+
+        objs = []
+        for item in data_list:
+            obj, _ = model_class.objects.update_or_create(
+                posRno=item['posRno'], defaults=item
+            )
+            objs.append(obj)
+
+        return objs
 def compare_view(request):
     selected_date = request.GET.get('selected_date', None)
+    check_total = request.GET.get('checkTotal')
+    check_batch = request.GET.get('checkBatch')
 
-    # Огноогоор шүүсэн өгөгдөл
+    barimtuud = []
+
+    # Огноогоор шүүх
     filters = {}
     if selected_date:
-        filters['created__date'] = selected_date  # Огноогоор шүүж байна гэж үзэж байна
+        filters['posRdate'] = selected_date
+        date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
 
-    # Бүх баримт (огноогоор шүүсэн эсвэл шүүгээгүй)
-    all_barimtuud = Barimt.objects.filter(**filters).order_by('-created')
+        # Нийт борлуулалтын баримт
+        if check_total:
+            barimtuud += fetch_and_save_barimt(status=0, date=date_obj)
 
-    # Сугалааны дугааргүй баримтууд: lottery хоосон буюу NULL
-    lottery_hooson_barimtuud = all_barimtuud.filter(Q(lottery__isnull=True) | Q(lottery=''))
+        # Багцын толгой баримт
+        if check_batch:
+            barimtuud += fetch_and_save_barimt(status=4, date=date_obj)
+
+    # Давхардалтыг арилгах (posRno-р ялгах)
+    seen_posRno = set()
+    unique_barimtuud = []
+    for b in barimtuud:
+        if b.posRno not in seen_posRno:
+            unique_barimtuud.append(b)
+            seen_posRno.add(b.posRno)
 
     context = {
-        'barimtuud': all_barimtuud,
-        'lottery_hooson_barimtuud': lottery_hooson_barimtuud,
-        'selected_date': selected_date,
+        "barimtuud": unique_barimtuud,
+        "selected_date": selected_date,
+        "comparison_result": True,
     }
     return render(request, 'compare.html', context)
 
@@ -334,22 +422,37 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 @csrf_exempt
 def delete_view(request):
-    if request.method in ["POST", "DELETE"]:
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({"status": "error", "message": "JSON буруу байна."})
-
+    if request.method == "DELETE":
+        data = json.loads(request.body)
         bill_id = data.get("billId")
         date = data.get("date")
-        store = data.get("storeId")
+        store_id = data.get("storeId")
 
-        store_str = str(store).lstrip('0') or '0'
-        store_num = int(store_str)
-        store_param = store_str
+        try:
+            barimt = Barimt.objects.get(billId=bill_id, date=date, storeId=store_id)
+            barimt.deleted_by = request.user  # 💡 Устгасан хэрэглэгчийг тэмдэглэх
+            barimt.save()
+            barimt.delete()
+            return JsonResponse({"message": "Амжилттай устлаа"})
+        except Barimt.DoesNotExist:
+            return JsonResponse({"message": "Баримт олдсонгүй"}, status=404)
 
-        if not bill_id or not date or not store:
-            return JsonResponse({"status": "error", "message": "Бүх талбар шаардлагатай."})
+    # if request.method in ["POST", "DELETE"]:
+    #     try:
+    #         data = json.loads(request.body)
+    #     except json.JSONDecodeError:
+    #         return JsonResponse({"status": "error", "message": "JSON буруу байна."})
+    #
+    #     bill_id = data.get("billId")
+    #     date = data.get("date")
+    #     store = data.get("storeId")
+    #
+    #     store_str = str(store).lstrip('0') or '0'
+    #     store_num = int(store_str)
+    #     store_param = store_str
+    #
+    #     if not bill_id or not date or not store:
+    #         return JsonResponse({"status": "error", "message": "Бүх талбар шаардлагатай."})
 
         base_ip = "10.10.90.234" if store_num >= 450 else "10.10.90.233"
         url = f"http://{base_ip}:9{store_param}/rest/receipt"

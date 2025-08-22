@@ -2,24 +2,166 @@
 
 {% block title %}Файл харьцуулах{% endblock %}
 
+{% block extra_head %}
+<style>
+main {
+    display: grid;
+    {#grid-template-columns: 320px 1fr;#}
+    gap: 24px;
+    align-items: start;
+    padding: 16px;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.04);
+}
+
+.document-section {
+    padding: 16px;
+    grid-template-columns: 320px 1fr;
+}
+
+.document-box {
+    max-height: 70vh;
+    overflow: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+
+
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead th {
+    position: sticky;
+    top: 0;
+    background: var(--brand);
+    color: #fff;
+    padding: 10px;
+    text-align: left;
+}
+
+tbody td {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+}
+.right, .left{
+    margin-bottom: 12px;
+}
+tbody tr:hover { background: #f3f4f6; }
+
+@media (max-width: 900px) {
+    main { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<h1>Хоёр файл харьцуулах</h1>
+<main>
+  <!-- Хайлтын хэсэг (optional) -->
+    {#  <section class="form-section card">#}
+    {#    <h3>Файл харьцуулах</h3>#}
+        {# Хэрэглэгч файлуудыг оруулах хэсэг #}
+    {#  </section>#}
 
-<form method="POST" enctype="multipart/form-data">
-  {% csrf_token %}
-  <label>Файл 1:</label>
-  <input type="file" name="file1" required><br><br>
+  <!-- Баримтын жагсаалт -->
+  <section class="document-section card">
+    {% if comparison_result %}
+    <div class="document-header">
+      <div class="left">
+        <h3 class="doc-title">Баримт</h3>
+            <form method="GET" action="" class="date-filter">
+              <label for="selected_date">Огноо:</label>
+              <input type="date" name="selected_date" id="selected_date" value="{{ selected_date|default:'' }}" >
+              <button type="submit" class="btn">Шүүх</button>
+            </form>
+      </div>
+    <div class="right">
+      <label style="margin-right:10px;">
+        <input type="checkbox" id="checkTotal" name="checkTotal"> Нийт борлуулалтын баримт
+      </label>
+      <label style="margin-right:10px;">
+        <input type="checkbox" id="checkBatch" name="checkBatch"> Багцын толгой баримт
+      </label>
+      <button id="exportBtn" class="btn" type="button" onclick="downloadBarimt()">Баримт татаж авах</button>
+    </div>
+    <div class="document-box">
+      <table>
+        <thead>
+          <tr>
+            <th>№</th>
+            <th>Пос системийн дугаар</th>
+            <th>ДДТД</th>
+            <th>Огноо</th>
+            <th>Нийт дүн</th>
+            <th>НХАТ</th>
+            <th>НӨАТ</th>
+            <th>Хаанаас үүсгэсэн</th>
+            <th>Худалдан авагчийн регистр</th>
+            <th>Худалдан авагчийн нэр</th>
+            <th>Пос дугаар</th>
+            <th>Хэрэглэгч</th>
+            <th>Дүүргийн код</th>
+            <th>Толгой нэхэмжлэх</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for barimt in barimtuud %}
+            <tr {% if barimt.is_deleted %}style="background-color:#f8d7da"{% endif %}>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ barimt.posSid }}</td>
+              <td>{{ barimt.posRno }}</td>
+              <td>{{ barimt.posRdate }}</td>
+              <td>{{ barimt.posRamt }}</td>
+              <td>{{ barimt.citytax }}</td>
+              <td>{{ barimt.posVamt }}</td>
+              <td>{{ barimt.fromType }}</td>
+              <td>{{ barimt.csmrRegNo }}</td>
+              <td>{{ barimt.csmrName }}</td>
+              <td>{{ barimt.posNo }}</td>
+              <td>{{ barimt.operatorName }}</td>
+              <td>{{ barimt.districtCode }}</td>
+              <td>{{ barimt.prParentRno }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="14">Одоогоор баримт байхгүй байна.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+    </div>
+  </section>
+    <div class="pagination" id="pagination">
+        {% if has_prev %}
+            <button class="btn" onclick="fetchBarimt('{{ selected_date }}', {{ page|add:'-1' }})">Өмнөх</button>
+        {% endif %}
+        <span>Хуудас {{ page }} / {{ total_pages }}</span>
+        {% if has_next %}
+            <button class="btn" onclick="fetchBarimt('{{ selected_date }}', {{ page|add:'1' }})">Дараах</button>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}
+{% block extra_js %}
+<script>
+function downloadBarimt() {
+    const checkTotal = document.getElementById('checkTotal').checked;
+    const checkBatch = document.getElementById('checkBatch').checked;
 
-  <label>Файл 2:</label>
-  <input type="file" name="file2" required><br><br>
-
-  <button type="submit">Харьцуулах</button>
-</form>
-
-{% if comparison_result %}
-  <h2>Харьцуулалтын үр дүн:</h2>
-  <p>{{ comparison_result }}</p>
-  <p>Файл 1: {{ file1 }}</p>
-  <p>Файл 2: {{ file2 }}</p>
-{% endif %}
+    let url = "{% url 'compare' %}?";
+    if(checkTotal) url += "total=1&";
+    if(checkBatch) url += "batch=1&";
+    const selectedDate = document.getElementById('selected_date')?.value;
+    if(selectedDate) url += "selected_date=" + selectedDate;
+    window.location.href = url;
+}
+</script>
 {% endblock %}
