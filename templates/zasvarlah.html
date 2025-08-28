@@ -192,14 +192,16 @@
         <form method="GET" action="" class="date-filter">
           <label for="selected_date">Огноо:</label>
           <input type="date" name="selected_date" id="selected_date" value="{{ selected_date|default:'' }}" >
+              <div class="filter-options">
+                <label>
+                  <input type="checkbox" id="show_deleted"> Устгагдсан
+                </label>
+                <label>
+                  <input type="checkbox" id="show_all" checked> Бүгд
+                </label>
+              </div>
           <button type="submit" class="btn">Шүүх</button>
         </form>
-
-          <div class="legend" id="legend" style="margin-bottom:10px">
-            <span class="chip-btn" data-filter="deleted"><i class="chip" style="background:#ef4444"></i> Устгагдсан баримтууд </span>
-            <span style="margin-left:4px">•</span>
-            <span class="chip-btn" data-filter="all" title="Бүгд">Бүгд</span>
-        </div>
       </div>
       <div class="right">
         <button id="exportBtn" class="btn" type="button">Баримт татаж авах</button>
@@ -231,7 +233,7 @@
               <td>{{ barimt.companyReg }}</td>
               <td>{{ barimt.lottery }}</td>
               <td>{{ barimt.created }}</td>
-              <td>{{ barimt.created_by }}</td>
+              <td>{{ barimt.created_by.username }}</td>
               <td>{{ barimt.is_deleted|yesno:"Тийм,Үгүй" }}</td>
             </tr>
           {% empty %}

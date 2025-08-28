@@ -23,3 +23,22 @@ def create_groups_permissions(sender, **kwargs):
     # Тайлан permission (жишээ нь view_barimt ашиглаж болно)
     tailan_barimt_perm = Permission.objects.get(codename='change_barimt', content_type=content_type)
     tailan_group.permissions.add(tailan_barimt_perm)
+
+@receiver(post_save, sender=Barimt)
+def log_save(sender, instance, created, **kwargs):
+    action = "created" if created else "updated"
+    ActivityLog.objects.create(
+        user=getattr(instance, "modified_by", None),
+        action=action,
+        model="Barimt",
+        object_id=instance.id #yamar mur nemegdseniig todorhoilhod hereglene
+    )
+
+@receiver(post_delete, sender=Barimt)
+def log_delete(sender, instance, **kwargs):
+    ActivityLog.objects.create(
+        user=getattr(instance, "modified_by", None),
+        action="deleted",
+        model="Barimt",
+        object_id=instance.id
+    )
