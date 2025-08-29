@@ -304,6 +304,10 @@
     </script>
 
 <script>
+    {#// ====== Баримтын дата-г JSON-оос унших ======#}
+    {#const rawData = document.getElementById('barimtuud-data').textContent;#}
+    {#let cachedBarimtuud = rawData.trim() ? JSON.parse(rawData) : [];#}
+
       // Автоматаар баримтын төрөл солих (companyReg бөглөгдвөл 3, хоосон бол 1)
       document.getElementById('companyReg').addEventListener('input', function () {
         const hasReg = this.value.trim().length > 0;
@@ -394,7 +398,9 @@
         fetch(`/generate/?${qs}`)
                 .then(r => r.json())
                 .then(data => {
-                    if (data.status !== 'success') throw new Error(data.message || 'API error');
+                    console.log('Response JSON:', data);
+                    console.log('data.success:', data.success); // 👈 энэ нь яг Boolean true эсэхийг харуулна
+                    if (!data.success) throw new Error(data.message || 'API error');
 
                     cachedBarimtuud.unshift({
                         billId: data.billId,
@@ -416,6 +422,7 @@
                     document.getElementById('companyFieldTypeInput').value = '1';
                     document.getElementById('storeId').value = '';
                     branchInput.value = '';
+                    alert("Баримт амжилттай шивэгдлээ");
                 })
                 .catch(err => {
                     console.error('Error:', err);

@@ -24,6 +24,7 @@ from .models import Ebarimt_zadargaa_0
 from .models import Ebarimt_zadargaa_4
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
+from django.core import serializers
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
@@ -85,7 +86,6 @@ def zasvarlah(request):
     page = request.GET.get("page", 1)
 
     barimtuud = Barimt.objects.all().order_by("-id")
-
     if selected_date:
         try:
             date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
@@ -98,11 +98,14 @@ def zasvarlah(request):
     paginator = Paginator(barimtuud, 15)  # нэг хуудсанд 15 мөр
     barimtuud_page = paginator.get_page(page)
 
+    # barimtuud_json = serializers.serialize("json", barimtuud)
+
     return render(
         request,
         "zasvarlah.html",
         {
             "barimtuud": barimtuud_page,
+            # "barimtuud_json": barimtuud_json,
             "page": barimtuud_page.number,
             "total_pages": paginator.num_pages,
             "has_prev": barimtuud_page.has_previous(),
