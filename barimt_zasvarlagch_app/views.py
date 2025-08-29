@@ -23,6 +23,7 @@ from django.core.management.base import BaseCommand
 from .models import Ebarimt_zadargaa_0
 from .models import Ebarimt_zadargaa_4
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.paginator import Paginator
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
@@ -80,29 +81,34 @@ def group_required(group_name):
 #     return render(request, 'register.html')
 
 def zasvarlah(request):
-    selected_date = request.GET.get("selected_date")
+    selected_date = request.GET.get("selected_date", "")
+    page = request.GET.get("page", 1)
+
     barimtuud = Barimt.objects.all().order_by("-id")
 
     if selected_date:
         try:
-            # selected_date-г datetime.date болгож хөрвүүлэх
             date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
-
-            # Өдрийн эхлэл ба дараагийн өдрийн эхлэл
             start_datetime = datetime.combine(date_obj, datetime.min.time())
             end_datetime = start_datetime + timedelta(days=1)
-
-            # Огноо, цагийн хүрээнд шүүх
-            barimtuud = barimtuud.filter(
-                created__gte=start_datetime, created__lt=end_datetime
-            )
+            barimtuud = barimtuud.filter(created__gte=start_datetime, created__lt=end_datetime)
         except ValueError:
             pass
+
+    paginator = Paginator(barimtuud, 15)  # нэг хуудсанд 15 мөр
+    barimtuud_page = paginator.get_page(page)
 
     return render(
         request,
         "zasvarlah.html",
-        {"barimtuud": barimtuud, "selected_date": selected_date},
+        {
+            "barimtuud": barimtuud_page,
+            "page": barimtuud_page.number,
+            "total_pages": paginator.num_pages,
+            "has_prev": barimtuud_page.has_previous(),
+            "has_next": barimtuud_page.has_next(),
+            "selected_date": selected_date,
+        },
     )
 
 def ebarimt_generate(request):
@@ -217,17 +223,28 @@ def ebarimt_generate(request):
             {"status": "failed", "message": "API call unsuccessful"}, status=500
         )
 
-def barimt_list(request):
-    barimtuud = Barimt.objects.all()
-    barimtuud_json = serializers.serialize("json", barimtuud)
-    return render(
-        request,
-        "zasvarlah.html",
-        {
-            "barimtuud_json": barimtuud_json,
-            "selected_date": request.GET.get("selected_date", ""),
-        },
-    )
+# def barimt_list(request):
+#     selected_date = request.GET.get("selected_date", "")
+#     barimtuud = Barimt.objects.all().order_by("-id")
+#     barimtuud_json = serializers.serialize("json", barimtuud)
+#     page = request.GET.get("page", 1)
+#     # if selected_date:
+#     #     barimtuud = barimtuud.filter(created=selected_date)
+#
+#     paginator = Paginator(barimtuud, 20)  # нэг хуудсанд 20 мөр
+#     barimtuud_page = paginator.get_page(page)
+#
+#     return render( request, "zasvarlah.html",
+#         {
+#             "barimtuud": barimtuud_page,
+#             "barimtuud_json": barimtuud_json,
+#             "page": barimtuud_page.number,
+#             "total_pages": paginator.num_pages,
+#             "has_prev": barimtuud_page.has_previous(),
+#             "has_next": barimtuud_page.has_next(),
+#             "selected_date": request.GET.get("selected_date", ""),
+#         },
+#     )
 
 # excel file-aar tataj avah heseg
 def export_excel(request):

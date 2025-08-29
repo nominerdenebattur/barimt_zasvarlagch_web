@@ -375,13 +375,13 @@
                 }
                 tr.classList.add("row-missing");
                 tr.innerHTML = `
-      <td>${i + 1}</td>
-      <td>${item.storeid ?? ""}</td>
-      <td>${item.receiptno ?? ""}</td>
-      <td>${item.pos_api_lottery ?? ""}</td>
-      <td>${item.pos_api_bill_id ?? ""}</td>
-      <td>${item.pos_api_sub_bill_id ?? ""}</td>
-      <td>${item.grosssale ?? ""}</td>`;
+                  <td>${i + 1}</td>
+                  <td>${item.storeid ?? ""}</td>
+                  <td>${item.receiptno ?? ""}</td>
+                  <td>${item.pos_api_lottery ?? ""}</td>
+                  <td>${item.pos_api_bill_id ?? ""}</td>
+                  <td>${item.pos_api_sub_bill_id ?? ""}</td>
+                  <td>${item.grosssale ?? ""}</td>`;
                 body.appendChild(tr);
             });
         }

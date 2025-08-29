@@ -69,11 +69,13 @@
       outline: none;
     }
     .document-box {
+      position: relative;
       width: 100%;
       max-height: 70vh;
-      overflow: auto;
       border-radius: 10px;
       border: 1px solid var(--border);
+      overflow-x: hidden;
+      overflow-y: hidden;
     }
     table {
       width: 100%;
@@ -87,7 +89,7 @@
       color: #fff;
       text-align: left;
       padding: 10px;
-      z-index: 1;
+      z-index: 10;
     }
     tbody td {
       padding: 10px;
@@ -96,51 +98,74 @@
     }
     tbody tr:hover { background: #f3f4f6; }
     .submit-section {
-      display: flex;
-      justify-content: center;
-      padding: 20px 12px;
+        display: flex;
+        justify-content: center;
+        padding: 20px 12px;
 
-    /* Autocomplete list */
-    #suggestions {
-      list-style: none;
-      padding: 0;
-      margin: 6px 0 0 0;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      max-height: 180px;
-      overflow-y: auto;
+        /* Autocomplete list */
+
+        #suggestions {
+            list-style: none;
+            padding: 0;
+            margin: 6px 0 0 0;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        #suggestions li {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        #suggestions li:hover {
+            background: #f3f4f6;
+        }
+
+        /* Helper chips */
+
+        .helper {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            margin-top: 12px;
+            background: var(--card);
+            border-top: 1px solid var(--border);
+            border-radius: 0 0 10px 10px;
+        }
+
+        .pagination span {
+            font-size: 13px;
+            color: var(--muted);
+        }
     }
-    #suggestions li {
-      padding: 8px 12px;
-      cursor: pointer;
-    }
-    #suggestions li:hover { background: #f3f4f6; }
-    /* Helper chips */
-    .helper {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 6px;
-    }
-  /* Responsive */
-  @media (max-width: 900px) {
-    main {
-      grid-template-columns: 1fr;
-      padding: 20px 16px;
-    }
-    .form-grid {
-      max-height: none;
-      position: static;
-      grid-template-columns: 1fr;
-    }
-    .submit-section .btn {
-      width: 100%;
-    }
-    .chip-btn.active {
-        font-weight: 700;
-        text-decoration: underline;
-    }
-  }}
+        /* Responsive */
+        @media (max-width: 900px) {
+            main {
+                grid-template-columns: 1fr;
+                padding: 20px 16px;
+            }
+
+            .form-grid {
+                max-height: none;
+                position: static;
+                grid-template-columns: 1fr;
+            }
+
+            .submit-section .btn {
+                width: 100%;
+            }
+        }
 </style>
 {% endblock %}
 
@@ -173,7 +198,7 @@
 
     <div class="form-group">
       <label for="storeId">Дэлгүүрийн дугаар</label>
-      <input type="text" name="storeId" id="storeId" readonly placeholder="Салбар сонгоход автоматаар бөглөгдөнө">
+      <input type="text" name="storeId" id="storeId" placeholder="Салбар сонгоход автоматаар бөглөгдөнө">
     </div>
 
     <div class="helper">Санамж: Салбарын нэр дээр дарвал дэлгүүрийн дугаар бөглөгдөнө.</div>
@@ -196,9 +221,9 @@
                 <label>
                   <input type="checkbox" id="show_deleted"> Устгагдсан
                 </label>
-                <label>
-                  <input type="checkbox" id="show_all" checked> Бүгд
-                </label>
+{#                <label>#}
+{#                  <input type="checkbox" id="show_all"> Бүгд#}
+{#                </label>#}
               </div>
           <button type="submit" class="btn">Шүүх</button>
         </form>
@@ -238,13 +263,22 @@
             </tr>
           {% empty %}
             <tr>
-                <td colspan="7">Одоогоор баримт байхгүй байна.</td>
+                <td colspan="7">Баримт байхгүй байна.</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </section>
+      <div class="pagination">
+        {% if barimtuud.has_previous %}
+            <a class="btn" href="?page={{ barimtuud.previous_page_number }}&selected_date={{ selected_date }}">Өмнөх</a>
+        {% endif %}
+        <span>Хуудас {{ barimtuud.number }} / {{ barimtuud.paginator.num_pages }}</span>
+        {% if barimtuud.has_next %}
+            <a class="btn" href="?page={{ barimtuud.next_page_number }}&selected_date={{ selected_date }}">Дараах</a>
+        {% endif %}
+      </div>
 </main>
 {% endblock %}
 
@@ -323,13 +357,13 @@
         const companyRegNo = document.getElementById('companyReg').value.trim();
         const storeNo = document.getElementById('storeId').value.trim();
         const receiptType = document.getElementById('companyFieldTypeInput').value.trim();
-        const branchNameVal = branchInput.value.trim();
+        {#const branchNameVal = branchInput.value.trim();#}
 
         if (!amount) { alert("Нийт дүн оруулна уу."); return; }
         if (!storeNo) { alert("Дэлгүүрийн дугаар оруулна уу."); return; }
-        if (!branchNameVal) { alert("Салбарын нэрээ сонгоно уу."); return; }
+        {#if (!branchNameVal) { alert("Салбарын нэрээ сонгоно уу."); return; }#}
 
-        if (!confirm(`Баримт үүсгэхэд итгэлтэй байна уу?\nНийт дүн: ${amount}\nБайгууллагын регистр: ${companyRegNo || '-'}`)) {
+        if (!confirm(`Баримт үүсгэхэд итгэлтэй байна уу?\nНийт дүн: ${amount}\nБайгууллагын регистр: ${companyRegNo || '-'} Дэлгүүрийн дугаар: ${storeNo}\n`)) {
           alert("Та мэдээллээ шалгаад дахин оролдоно уу.");
           return;
         }
@@ -342,37 +376,35 @@
         }).toString();
 
         fetch(`/generate/?${qs}`)
-          .then(r => r.json())
-          .then(data => {
-            if (data.status !== 'success') {
-              console.error('Generate error:', data);
-              throw new Error(data.message || 'API error');
-            }
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status !== 'success') throw new Error(data.message || 'API error');
 
-            const tbody = document.querySelector('.document-box table tbody');
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${tbody.children.length + 1}</td>
-              <td>${data.billId || '-'}</td>
-              <td>${amount}</td>
-              <td>${storeNo}</td>
-              <td>${companyRegNo || '-'}</td>
-              <td>${data.lottery || '-'}</td>
-              <td>${data.created || '-'}</td>
-            `;
-            tbody.insertBefore(tr, tbody.firstChild);
+                    cachedBarimtuud.unshift({
+                        billId: data.billId,
+                        totalAmount: amount,
+                        storeNo: storeNo,
+                        companyReg: companyRegNo,
+                        lottery: data.lottery,
+                        created: data.created,
+                        created_by: data.created_by || '-',
+                        is_deleted: false
+                    });
 
-            // Амжилттай болсны дараа талбаруудыг хоослох
-            document.getElementById('totalAmount').value = '';
-            document.getElementById('companyReg').value = '';
-            document.getElementById('companyFieldTypeInput').value = '1';
-            document.getElementById('storeId').value = '';
-            branchInput.value = '';
-          })
-          .catch(err => {
-            console.error('Error:', err);
-            alert("Алдаа гарлаа. Дахин оролдоно уу.");
-          });
+                    currentPage = 1;
+                    updateList();
+
+                    // Талбаруудыг хоослох
+                    document.getElementById('totalAmount').value = '';
+                    document.getElementById('companyReg').value = '';
+                    document.getElementById('companyFieldTypeInput').value = '1';
+                    document.getElementById('storeId').value = '';
+                    branchInput.value = '';
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert("Алдаа гарлаа. Дахин оролдоно уу.");
+                });
       });
 
       // ====== Excel татах ======
@@ -390,16 +422,25 @@
         window.location.href = `/export_excel/?${qs}`;
       });
 
-    let cachedBarimtuud = JSON.parse(document.getElementById('barimtuud-data').textContent);
+    // ====== Хуудаслалт ба render ======
+    const ITEMS_PER_PAGE = 15;
+    let currentPage = 1;
+    let filteredList = [];
+    const showDeletedCheckbox = document.getElementById('show_deleted');
 
-    function renderBarimt(list) {
+    function renderBarimt(list, page = 1) {
         const tbody = document.querySelector('.document-box table tbody');
         tbody.innerHTML = '';
-        list.forEach((barimt, idx) => {
+
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        const pageItems = list.slice(start, end); // 1–15, 16–30, ...
+
+        pageItems.forEach((barimt, idx) => {
             const tr = document.createElement('tr');
             if (barimt.is_deleted) tr.style.backgroundColor = '#f8d7da';
             tr.innerHTML = `
-                <td>${idx + 1}</td>
+                <td>${start + idx + 1}</td>
                 <td>${barimt.billId}</td>
                 <td>${barimt.totalAmount}</td>
                 <td>${barimt.storeNo}</td>
@@ -411,26 +452,59 @@
             `;
             tbody.appendChild(tr);
         });
+
+        // Pagination
+        const totalPages = Math.ceil(list.length / ITEMS_PER_PAGE);
+        const paginationDiv = document.querySelector('.pagination');
+        const paginationSpan = paginationDiv.querySelector('span');
+        paginationSpan.textContent = `Хуудас ${page} / ${totalPages || 1}`;
+
+        // Өмнөх/Дараах товчлуурууд
+        paginationDiv.querySelectorAll('a').forEach(a => a.remove());
+
+        // Өмнөх товч
+        if (page > 1) {
+            const prev = document.createElement('a');
+            prev.href = "#";
+            prev.className = 'btn';
+            prev.textContent = 'Өмнөх';
+            prev.addEventListener('click', e => { e.preventDefault(); currentPage--; updateList(); });
+            paginationDiv.insertBefore(prev, paginationSpan);
+        }
+
+        if (page < totalPages) {
+            const next = document.createElement('a');
+            next.href = "#";
+            next.className = 'btn';
+            next.textContent = 'Дараах';
+            next.addEventListener('click', e => { e.preventDefault(); currentPage++; updateList(); });
+            paginationDiv.appendChild(next);
+        }
     }
 
-    // Filter товч дарахад ажиллах
-    document.getElementById('legend').addEventListener('click', (e) => {
-        const target = e.target.closest('.chip-btn');
-        if (!target) return;
-        const which = target.dataset.filter;
+    function updateList() {
+        // 1. Filter: show deleted
+        filteredList = [...cachedBarimtuud];
+        if (showDeletedCheckbox.checked) filteredList = filteredList.filter(b => b.is_deleted);
 
-        // Active class тохируулах
-        document.querySelectorAll('#legend .chip-btn').forEach(el => {
-            el.classList.toggle('active', el === target);
-        });
+        // 2. Filter: selected date
+        const selectedDate = document.getElementById('selected_date').value;
+        if (selectedDate) filteredList = filteredList.filter(b => b.created.startsWith(selectedDate));
 
-        let list = cachedBarimtuud;
-        if (which === 'deleted') {
-            list = cachedBarimtuud.filter(b => b.is_deleted);
-        }
-        renderBarimt(list);
-    });
+        // 3. Page check
+        const totalPages = Math.ceil(filteredList.length / ITEMS_PER_PAGE);
+        if (currentPage > totalPages) currentPage = totalPages || 1;
 
-    renderBarimt(cachedBarimtuud);
+        // 4. Render
+        renderBarimt(filteredList, currentPage);
+    }
+
+    // Event
+    showDeletedCheckbox.addEventListener('change', () => { currentPage = 1; updateList(); });
+    document.getElementById('selected_date').addEventListener('change', () => { currentPage = 1; updateList(); });
+
+    // Анх харуулах
+    updateList();
+
     </script>
 {% endblock %}
