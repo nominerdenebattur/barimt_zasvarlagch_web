@@ -97,31 +97,42 @@
       background: #fff;
     }
     tbody tr:hover { background: #f3f4f6; }
-    .submit-section {
-        display: flex;
-        justify-content: center;
-        padding: 20px 12px;
+    /* Autocomplete list */
 
-        /* Autocomplete list */
-
+        /* Suggestion list container */
         #suggestions {
-            list-style: none;
-            padding: 0;
-            margin: 6px 0 0 0;
+            position: absolute;
             background: #fff;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            max-height: 180px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            max-height: 200px;
             overflow-y: auto;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 0;
+            margin-top: 2px;
         }
 
+        /* Each suggestion item */
         #suggestions li {
+            list-style: none;
             padding: 8px 12px;
             cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            font-size: 14px;
         }
 
+        /* Hover effect */
         #suggestions li:hover {
-            background: #f3f4f6;
+            background-color: #2a9df4;
+            color: #fff;
+        }
+
+        /* Optional: highlight selected with keyboard (active class) */
+        #suggestions li.active {
+            background-color: #0b78d1;
+            color: #fff;
         }
 
         /* Helper chips */
@@ -148,6 +159,11 @@
             font-size: 13px;
             color: var(--muted);
         }
+    .submit-section {
+        display: flex;
+        justify-content: center;
+        padding: 20px 12px;
+
     }
         /* Responsive */
         @media (max-width: 900px) {
@@ -251,7 +267,7 @@
         <tbody>
           {% for barimt in barimtuud %}
             <tr {% if barimt.is_deleted %}style="background-color: #f8d7da;"{% endif %}>
-              <td>{{ forloop.counter }}</td>
+              <td>{{ forloop.counter|add:barimtuud.start_index|add:"-1" }}</td>
               <td>{{ barimt.billId }}</td>
               <td>{{ barimt.totalAmount }}</td>
               <td>{{ barimt.storeNo }}</td>
@@ -269,7 +285,6 @@
         </tbody>
       </table>
     </div>
-  </section>
       <div class="pagination">
         {% if barimtuud.has_previous %}
             <a class="btn" href="?page={{ barimtuud.previous_page_number }}&selected_date={{ selected_date }}">Өмнөх</a>
@@ -279,6 +294,7 @@
             <a class="btn" href="?page={{ barimtuud.next_page_number }}&selected_date={{ selected_date }}">Дараах</a>
         {% endif %}
       </div>
+  </section>
 </main>
 {% endblock %}
 
