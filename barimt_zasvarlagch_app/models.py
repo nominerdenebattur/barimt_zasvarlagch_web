@@ -27,37 +27,12 @@ class Barimt(models.Model):
     def __str__(self):
         return f"{self.billId or 'NoBill'} - {self.totalAmount}"
 
-# class DeletedBarimt(models.Model):
-#     billId = models.CharField(max_length=50)
-#     subBillId = models.CharField(max_length=50, blank=True, null=True)
-#     lottery = models.CharField(max_length=50, blank=True, null=True)
-#     totalAmount = models.FloatField()
-#     companyReg = models.CharField(max_length=50, blank=T rue, null=True)
-#     storeNo = models.CharField(max_length=10)
-#     deleted_by = models.CharField(max_length=250)
-#     deleted_at = models.DateTimeField(auto_now_add=True)
-#
-#     def __str__(self):
-#         return f"{self.billId} - {self.deleted_by}"
-
 User = get_user_model()
 
-class ActivityLog(models.Model):
-    ACTION_CHOICES = [
-        ("create", "Create"),
-        ("update", "Update"),
-        ("delete", "Delete"),
-    ]
-
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
-    model_name = models.CharField(max_length=100)
-    object_id = models.CharField(max_length=100, null=True, blank=True)
-    message = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(default=timezone.now)
-
-    def __str__(self):
-        return f"{self.user} {self.action} {self.model_name} {self.created_at}"
+class UserActionLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    action = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
 class Ebarimt_zadargaa_0(models.Model):
     posSid = models.CharField(default=0, blank=True, null=True, max_length=500)

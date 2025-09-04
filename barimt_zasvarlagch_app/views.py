@@ -173,10 +173,12 @@ def ebarimt_generate(request):
     store_num = int(store_str)
     store_param = store_str
 
-    if store_num > 450:
-        url = f"http://10.10.90.234/23/api/?store={store_param}put"
-    else:
-        url = f"http://10.10.90.233/23/api/?store={store_param}put"
+    # if store_num > 450:
+    #     url = f"http://10.10.90.234/23/api/?store={store_param}put"
+    # else:
+    #     url = f"http://10.10.90.233/23/api/?store={store_param}put"
+
+    url = f"http://10.10.90.233/23/api/?store=160put"
 
     headers = {"Content-Type": "application/json"}
     response = requests.post(url, headers=headers, data=json.dumps(data))
@@ -218,12 +220,15 @@ def ebarimt_generate(request):
                 "subBillId": sub_bill_id,
                 "lottery": lottery,
                 "id": obj.id,
+                "created_by": obj.created_by.username if obj.created_by else None,
             }
         )
 
     else:
         return JsonResponse(
-            {"status": "failed", "message": "API call unsuccessful"}, status=500
+            {"status": "failed",
+             "message": "API call unsuccessful"},
+            status=500
         )
 
 # def barimt_list(request):
