@@ -255,6 +255,7 @@
           <tr>
             <th scope="col">№</th>
             <th scope="col">ДДТД</th>
+            <th scope="col">дэд ДДТД</th>
             <th scope="col">Нийт дүн</th>
             <th scope="col">Дэлгүүр</th>
             <th scope="col">Регистерийн дугаар</th>
@@ -269,6 +270,7 @@
             <tr {% if barimt.is_deleted %}style="background-color: #f8d7da;"{% endif %}>
               <td>{{ forloop.counter|add:barimtuud.start_index|add:"-1" }}</td>
               <td>{{ barimt.billId }}</td>
+              <td>{{ barimt.subBillId }}</td>
               <td>{{ barimt.totalAmount }}</td>
               <td>{{ barimt.storeNo }}</td>
               <td>{{ barimt.companyReg }}</td>

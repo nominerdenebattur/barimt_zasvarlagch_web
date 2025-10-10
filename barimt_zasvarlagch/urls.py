@@ -30,6 +30,8 @@ urlpatterns = [
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('compare/', views.compare_view, name='compare'),
     path('delete/', views.delete_view, name='delete'),
+    path('aldaatai_barimt/', views.aldaatai_barimt_oloh_view, name='aldaatai_barimt'),
+    path('server/', views.server_view, name='server'),
 ]
 
 if settings.DEBUG:

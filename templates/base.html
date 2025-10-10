@@ -68,6 +68,10 @@
           <button type="button" class="btn" onclick="location.href='{% url 'delete' %}'">Устгах</button>
         {% endif %}
 
+        {% if is_aldaatai_barimt_oloh %}
+          <button type="button" class="btn" onclick="location.href='{% url 'aldaatai_barimt' %}'">Алдаа олох</button>
+        {% endif %}
+
         <form method="POST" action="{% url 'login' %}" style="display:inline;">
           {% csrf_token %}
           <button type="submit">Гарах</button>

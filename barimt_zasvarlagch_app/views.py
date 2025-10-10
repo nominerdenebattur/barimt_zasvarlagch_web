@@ -169,9 +169,9 @@ def ebarimt_generate(request):
         "amountTenderedCoupon": "0.00",
     }
 
-    store_str = str(store).lstrip("0") or "0"
-    store_num = int(store_str)
-    store_param = store_str
+    # store_str = str(store).lstrip("0") or "0"
+    # store_num = int(store_str)
+    # store_param = store_str
 
     # if store_num > 450:
     #     url = f"http://10.10.90.234/23/api/?store={store_param}put"
@@ -548,3 +548,11 @@ def delete_view(request):
 
         {"deleted_barimts": deleted_barimts, "selected_date": selected_date, "is_delete": True,},
     )
+
+def aldaatai_barimt_oloh_view(request):
+    if request.method == "GET":
+        return render(request, "aldaatai_barimt.html")
+
+def server_view(request):
+    if request.method == "GET":
+        return render(request, "server.html")
