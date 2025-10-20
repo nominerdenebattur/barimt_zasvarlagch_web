@@ -462,7 +462,7 @@ def compare_view(request):
         "selected_date": selected_date,
         "comparison_result": True,
     }
-    return render(request, "compare.html", context)
+    return render(request, "tailan.html", context)
 
 def user_groups(request):
     if request.user.is_authenticated:
@@ -554,5 +554,8 @@ def aldaatai_barimt_oloh_view(request):
         return render(request, "aldaatai_barimt.html")
 
 def server_view(request):
+    # servers = ServerStatus.objects.all().order_by('hostname')
+    return render(request, 'server.html')
+def nuhun_shiveh_view(request):
     if request.method == "GET":
         return render(request, "server.html")

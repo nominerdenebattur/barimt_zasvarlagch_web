@@ -32,6 +32,7 @@ urlpatterns = [
     path('delete/', views.delete_view, name='delete'),
     path('aldaatai_barimt/', views.aldaatai_barimt_oloh_view, name='aldaatai_barimt'),
     path('server/', views.server_view, name='server'),
+    path('nuhun_shiveh/', views.nuhun_shiveh_view, name='nuhun_shiveh'),
 ]
 
 if settings.DEBUG:
