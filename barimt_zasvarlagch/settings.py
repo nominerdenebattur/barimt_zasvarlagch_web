@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    'barimt_zasvarlagch_app'
+    'barimt_zasvarlagch_app',
+    'zabbix_monitor'
 ]
 
 MIDDLEWARE = [
