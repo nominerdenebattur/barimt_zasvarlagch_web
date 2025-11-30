@@ -1,0 +1,30 @@
+[Unit]
+Description=Invoice Processing Daemon Service
+After=network.target redis.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/path/to/your/project
+Environment="PYTHONUNBUFFERED=1"
+Environment="REDIS_HOST=localhost"
+Environment="REDIS_PORT=6379"
+Environment="OPENAI_API_KEY=your-api-key-here"
+
+# Daemon service эхлүүлэх
+ExecStart=/usr/bin/python3 /path/to/your/project/daemon_service.py start
+
+# AI service эхлүүлэх (parallel)
+ExecStartPost=/usr/bin/python3 /path/to/your/project/ai_service.py
+
+ExecStop=/usr/bin/python3 /path/to/your/project/daemon_service.py stop
+
+Restart=always
+RestartSec=10
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

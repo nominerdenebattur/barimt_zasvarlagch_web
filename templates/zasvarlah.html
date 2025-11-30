@@ -374,63 +374,77 @@
       });
 
       // ====== Баримт үүсгэх ======
-      document.getElementById('generateBtn').addEventListener('click', function () {
+      // ====== Баримт үүсгэх (AI шалгалттай) ======
+    document.getElementById('generateBtn').addEventListener('click', function () {
         const amount = document.getElementById('totalAmount').value.trim();
         const companyRegNo = document.getElementById('companyReg').value.trim();
         const storeNo = document.getElementById('storeId').value.trim();
         const receiptType = document.getElementById('companyFieldTypeInput').value.trim();
-        {#const branchNameVal = branchInput.value.trim();#}
 
-        if (!amount) { alert("Нийт дүн оруулна уу."); return; }
-        if (!storeNo) { alert("Дэлгүүрийн дугаар оруулна уу."); return; }
-        {#if (!branchNameVal) { alert("Салбарын нэрээ сонгоно уу."); return; }#}
-
-        if (!confirm(`Баримт үүсгэхэд итгэлтэй байна уу?\nНийт дүн: ${amount}\nБайгууллагын регистр: ${companyRegNo || '-'} Дэлгүүрийн дугаар: ${storeNo}\n`)) {
-          alert("Та мэдээллээ шалгаад дахин оролдоно уу.");
-          return;
+        // Validation
+        if (!amount) {
+            alert("Нийт дүн оруулна уу.");
+            return;
+        }
+        if (!storeNo) {
+            alert("Дэлгүүрийн дугаар оруулна уу.");
+            return;
         }
 
+        if (!confirm(`Баримт үүсгэхэд итгэлтэй байна уу?\nНийт дүн: ${amount}\nБайгууллагын регистр: ${companyRegNo || '-'}\nДэлгүүрийн дугаар: ${storeNo}\n`)) {
+            return;
+        }
+
+        // Loading state
+        const generateBtn = document.getElementById('generateBtn');
+        const originalText = generateBtn.textContent;
+        generateBtn.textContent = ' AI шалгаж байна...';
+        generateBtn.disabled = true;
+
         const qs = new URLSearchParams({
-          totalAmount: amount,
-          companyId: companyRegNo,
-          storeId: storeNo,
-          companyFieldTypeInput: receiptType
+            totalAmount: amount,
+            companyId: companyRegNo,
+            storeId: storeNo,
+            companyFieldTypeInput: receiptType
         }).toString();
 
-        fetch(`/generate/?${qs}`)
-                .then(r => r.json())
-                .then(data => {
-                    console.log('Response JSON:', data);
-                    console.log('data.success:', data.success); // 👈 энэ нь яг Boolean true эсэхийг харуулна
-                    if (!data.success) throw new Error(data.message || 'API error');
+        // 🆕 AI endpoint дуудах
+        fetch(`/api/ebarimt/generate-ai/?${qs}`)
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
+            .then(data => {
+                console.log('AI Response:', data);
 
-                    cachedBarimtuud.unshift({
-                        billId: data.billId,
-                        totalAmount: amount,
-                        storeNo: storeNo,
-                        companyReg: companyRegNo,
-                        lottery: data.lottery,
-                        created: data.created,
-                        created_by: data.created_by || '-',
-                        is_deleted: false
-                    });
+                // ✅ Амжилттай
+                if (data.status === 'success') {
+                    alert(`✅ Баримт амжилттай үүслээ!\n\nBillID: ${data.billId}\nLottery: ${data.lottery}\n\nAI Validation: ${data.ai_validation.is_valid ? '✓ Зөв' : '✗ Алдаатай'}`);
 
-                    currentPage = 1;
-                    updateList();
-
-                    // Талбаруудыг хоослох
-                    document.getElementById('totalAmount').value = '';
-                    document.getElementById('companyReg').value = '';
-                    document.getElementById('companyFieldTypeInput').value = '1';
-                    document.getElementById('storeId').value = '';
-                    branchInput.value = '';
-                    alert("Баримт амжилттай шивэгдлээ");
-                })
-                .catch(err => {
-                    console.error('Error:', err);
-                    alert("Алдаа гарлаа. Дахин оролдоно уу.");
-                });
-      });
+                    // Хуудас refresh (эсвэл cachedBarimtuud-д нэмэх)
+                    location.reload();
+                }
+                // ❌ AI validation амжилтгүй
+                else if (data.status === 'validation_failed') {
+                    const errors = data.errors.join('\n');
+                    const suggestions = data.suggestions.join('\n');
+                    alert(`❌ AI алдаа илрүүллээ:\n\n${errors}\n\n💡 Санал:\n${suggestions}`);
+                }
+                // ⚠️ Бусад алдаа
+                else {
+                    alert(`⚠️ Алдаа гарлаа: ${data.message || 'Тодорхойгүй алдаа'}`);
+                }
+            })
+            .catch(err => {
+                console.error('Fetch error:', err);
+                alert(`🔴 Системийн алдаа:\n${err.message}\n\nДахин оролдоно уу.`);
+            })
+            .finally(() => {
+                // Loading state цуцлах
+                generateBtn.textContent = originalText;
+                generateBtn.disabled = false;
+            });
+    });
 
       // ====== Excel татах ======
       document.getElementById('exportBtn').addEventListener('click', function () {

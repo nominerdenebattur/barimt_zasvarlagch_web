@@ -2,29 +2,37 @@ import os
 import pandas as pd
 import requests
 import json
-from django.shortcuts import render
+
+from django.conf import settings
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.utils.datetime_safe import datetime
-from .models import Barimt
+from openai import OpenAI
+
+from .models import Barimt, Ebarimt_zadargaa_0, Ebarimt_zadargaa_4
 from django.contrib.auth.models import User
-from django.shortcuts import redirect
 from django.contrib import messages
 from django.utils import timezone
-from datetime import datetime, timedelta
-from datetime import datetime, date
+from datetime import datetime, timedelta, date
 from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
+from django.urls import reverse_lazy
 from django.db.models import Q
-import certifi
-from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.csrf import csrf_exempt
-from requests.exceptions import HTTPError
-from django.core.management.base import BaseCommand
-from .models import Ebarimt_zadargaa_0
-from .models import Ebarimt_zadargaa_4
-from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from django.core import serializers
+from requests.exceptions import HTTPError
+from django.core.management.base import BaseCommand
+
+import certifi
+import redis
+
+# Redis client
+redis_client = redis.Redis(
+    host='localhost',
+    port=6379,
+    decode_responses=True
+)
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
@@ -372,6 +380,7 @@ def fetch_and_save_barimt(status, date):
 
     attempts = 0
     max_retries = 50
+    current_date = date
     while attempts < max_retries:
         try:
             token_response = requests.post(token_url, data=token_payload)
@@ -397,7 +406,7 @@ def fetch_and_save_barimt(status, date):
                 service_url, headers=headers, json=request_payload
             )
             service_response.raise_for_status()
-            data_list = response.json().get("data", {}).get("list", [])
+            data_list = service_response.json().get("data", {}).get("list", [])
         except HTTPError as e:
             print(f"HTTP алдаа: {e}")
             attempts += 1
@@ -559,3 +568,152 @@ def server_view(request):
 def nuhun_shiveh_view(request):
     if request.method == "GET":
         return render(request, "server.html")
+
+#------------------------ AI model -----------------------------
+
+def ebarimt_generate_with_ai(request):
+    """
+    AI шалгалттай баримт үүсгэх (Redis-гүй энгийн хувилбар)
+    """
+    try:
+        # 1. Input авах
+        total_amount = request.GET.get("totalAmount")
+        company_reg = request.GET.get("companyId")
+        store = request.GET.get("storeId")
+        bill_type = request.GET.get("companyFieldTypeInput")
+
+        if not total_amount or not store:
+            return JsonResponse({
+                "status": "error",
+                "message": "Дүн болон дэлгүүрийн дугаар шаардлагатай"
+            }, status=400)
+
+        # 2. AI-аар шалгах
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+
+        prompt = f"""
+Дараах баримтын мэдээллийг шалгаад JSON форматаар буцаа:
+
+Өгөгдөл:
+- Нийт дүн: {total_amount}
+- Регистр: {company_reg or "байхгүй"}
+- Дэлгүүр: {store}
+
+Шалгах зүйлс:
+1. Дүн сөрөг эсвэл 0 байж болохгүй
+2. Дүн 100,000,000-с их байж болохгүй
+3. Регистр байвал 7 оронтой эсэхийг шалга
+4. Дэлгүүрийн дугаар зөв эсэхийг шалга
+
+Заавал дараах JSON форматаар буцаа (бусад текст бичих хэрэггүй):
+{{
+    "is_valid": true немээс false,
+    "errors": ["алдааны жагсаалт"],
+    "suggestions": ["санал"],
+    "validated_data": {{
+        "totalAmount": "зассан дүн",
+        "companyReg": "зассан регистр эсвэл null",
+        "storeNo": "{store}",
+        "billType": "{bill_type or ('1' if company_reg else '3')}"
+    }}
+}}
+"""
+
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Та баримтын мэдээлэл шалгадаг AI туслах. Зөвхөн JSON буцаа."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.3,
+            response_format={"type": "json_object"}
+        )
+
+        # AI үр дүн авах
+        ai_result = json.loads(response.choices[0].message.content)
+
+        # 3. Алдаа байвал буцаах
+        if not ai_result.get("is_valid", False):
+            return JsonResponse({
+                "status": "validation_failed",
+                "errors": ai_result.get("errors", []),
+                "suggestions": ai_result.get("suggestions", [])
+            }, status=400)
+
+        # 4. eBarimt API дуудах (таны одоогийн функц)
+        validated_data = ai_result.get("validated_data", {})
+
+        data = {
+            "stocks": [{
+                "measureUnit": "ширхэг",
+                "code": "100541",
+                "name": "Хүнсний бараа, ундаа, тамхины төрөлжсөн бус дэлгүүрийн жижиглэн худалдаа",
+                "barCode": "6212",
+                "qty": "1.00",
+                "totalAmount": str(validated_data.get("totalAmount")),
+                "cityTax": "0.00",
+                "unitPrice": str(validated_data.get("totalAmount")),
+                "vat": "1.00",
+                "discount": "0.00",
+            }],
+            "transID": "11120035110134",
+            "cashAmount": str(validated_data.get("totalAmount")),
+            "nonCashAmount": "0.00",
+            "amount": str(validated_data.get("totalAmount")),
+            "cityTax": "0.00",
+            "vat": "1.00",
+            "billType": validated_data.get("billType"),
+            "customerNo": str(validated_data.get("companyReg") or ""),
+            "tenderType": "",
+            "amountTendered": "0.00",
+        }
+
+        url = f"http://10.10.90.233/23/api/?store={store}put"
+        headers = {"Content-Type": "application/json"}
+
+        api_response = requests.post(url, headers=headers, data=json.dumps(data))
+
+        # 5. Амжилттай бол Database-д хадгалах
+        if api_response.status_code == 200:
+            response_json = api_response.json()
+
+            obj = Barimt.objects.create(
+                billId=response_json.get("billId", ""),
+                subBillId=response_json.get("subBillId", ""),
+                lottery=response_json.get("lottery", ""),
+                totalAmount=validated_data.get("totalAmount"),
+                companyReg=validated_data.get("companyReg"),
+                storeNo=store,
+                created_by=request.user if request.user.is_authenticated else None,
+            )
+
+            return JsonResponse({
+                "status": "success",
+                "billId": obj.billId,
+                "subBillId": obj.subBillId,
+                "lottery": obj.lottery,
+                "id": obj.id,
+                "ai_validation": {
+                    "is_valid": ai_result.get("is_valid"),
+                    "suggestions": ai_result.get("suggestions", [])
+                }
+            })
+        else:
+            return JsonResponse({
+                "status": "api_failed",
+                "message": f"eBarimt API алдаа: {api_response.status_code}"
+            }, status=500)
+
+    except Exception as e:
+        import traceback
+        print("Алдаа:", traceback.format_exc())
+        return JsonResponse({
+            "status": "error",
+            "message": str(e)
+        }, status=500)
