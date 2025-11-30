@@ -68,13 +68,6 @@
           <button type="button" class="btn" onclick="location.href='{% url 'delete' %}'">Устгах</button>
         {% endif %}
 
-
-          <button type="button" class="btn" onclick="location.href='{% url 'aldaatai_barimt' %}'">Зургаар шивэх</button>
-
-          <button type="button" class="btn" onclick="location.href='{% url 'server' %}'">Сервер</button>
-
-          <button type="button" class="btn" onclick="location.href='{% url 'nuhun_shiveh' %}'">Нөхөн шивэх</button>
-
         <form method="POST" action="{% url 'login' %}" style="display:inline;">
           {% csrf_token %}
           <button type="submit">Гарах</button>

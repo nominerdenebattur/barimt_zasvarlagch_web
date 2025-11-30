@@ -30,9 +30,6 @@ urlpatterns = [
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('compare/', views.compare_view, name='compare'),
     path('delete/', views.delete_view, name='delete'),
-    path('aldaatai_barimt/', views.aldaatai_barimt_oloh_view, name='aldaatai_barimt'),
-    path('server/', views.server_view, name='server'),
-    path('nuhun_shiveh/', views.nuhun_shiveh_view, name='nuhun_shiveh'),
     path('api/ebarimt/generate-ai/', views.ebarimt_generate_with_ai, name='ebarimt_ai'),
 ]
 
