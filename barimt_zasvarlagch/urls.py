@@ -23,10 +23,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
     path('zasvarlah/', views.zasvarlah, name='zasvarlah'),
-    path('generate/', views.ebarimt_generate, name='generate'),
+    path('api/ebarimt/generate/', views.ebarimt_generate, name='ebarimt'),
     path('export_excel/', views.export_excel, name='export_excel'),
-    # path('register/', views.register_view, name='register'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('compare/', views.compare_view, name='compare'),
     path('delete/', views.delete_view, name='delete'),

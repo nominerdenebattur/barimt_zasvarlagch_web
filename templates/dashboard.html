@@ -234,93 +234,134 @@
 {% endblock %}
 
 {% block content %}
-    <div class="card">
-        <div class="toolbar">
-            <div class="date-filter">
-                <label for="selected_date">Огноо:</label>
-                <input type="date" id="selected_date" value="{{ selected_date }}">
-                <button id="fetchBtn" class="btn" type="button">Шүүх</button>
+    <main>
+        <div class="card">
+            <div class="toolbar">
+                <div class="date-filter">
+                    <label for="selected_date">Огноо:</label>
+                    <input type="date" id="selected_date" value="{{ selected_date }}">
+                    <button id="fetchBtn" class="btn" type="button">Шүүх</button>
+                </div>
+
+                <!-- Pagination-ийг энд оруулах -->
+                <div class="pagination" id="pagination-top" style="margin: 0; padding: 8px 0; border: none;">
+                    <span id="page-info">Өгөгдөл татна уу</span>
+                </div>
+            </div>
+
+            <div class="legend" id="legend" style="margin-bottom:10px">
+                <span class="chip-btn" data-filter="return"><i class="chip" style="background:#fff7cc"></i> Буцаалт (return)</span>
+                <span class="chip-btn" data-filter="missing"><i class="chip" style="background:#ef4444"></i> Сугалааны дугааргүй</span>
+                <span style="margin-left:4px">•</span>
+                <span class="chip-btn" data-filter="all" title="Бүгд">Бүгд</span>
+            </div>
+
+            <div class="grid">
+                <!-- Хүснэгтүүд -->
+                <section class="card data-wrap" id="wrap-barimt" style="padding:12px">
+                    <div class="loading" id="barimt-loading" aria-hidden="true">
+                        <div class="spinner"></div>
+                    </div>
+                    <h3>Бүх баримт</h3>
+                    <div class="document-box" id="box-barimt">
+                        <div class="table-scroll">
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th>№</th>
+                                    <th>Дэлгүүрийн дугаар</th>
+                                    <th>Баримтын дугаар</th>
+                                    <th>Сугалааны дугаар</th>
+                                    <th>ДДТД</th>
+                                    <th>Дэд ДДТД</th>
+                                    <th>Борлуулалт</th>
+                                </tr>
+                                </thead>
+                                <tbody id="barimt-body">
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; padding: 40px; color: var(--muted);">
+                                            Огноо сонгоод "Шүүх" товч дарна уу
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card data-wrap" id="wrap-lottery" style="padding:12px">
+                    <div class="loading" id="lottery-loading" aria-hidden="true">
+                        <div class="spinner"></div>
+                    </div>
+                    <h3>Сугалааны дугааргүй баримт</h3>
+                    <div class="document-box" id="box-lottery">
+                        <div class="table-scroll">
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th>№</th>
+                                    <th>Дэлгүүрийн дугаар</th>
+                                    <th>Баримтын дугаар</th>
+                                    <th>Сугалааны дугаар</th>
+                                    <th>ДДТД</th>
+                                    <th>Дэд ДДТД</th>
+                                    <th>Борлуулалт</th>
+                                </tr>
+                                </thead>
+                                <tbody id="lottery-body">
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; padding: 40px; color: var(--muted);">
+                                            Сугалааны дугааргүй баримт энд харагдана
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
-
-        <div class="legend" id="legend" style="margin-bottom:10px">
-            <span class="chip-btn" data-filter="return"><i class="chip" style="background:#fff7cc"></i> Буцаалт (return)</span>
-            <span class="chip-btn" data-filter="missing"><i class="chip" style="background:#ef4444"></i> Сугалааны дугааргүй</span>
-            <span style="margin-left:4px">•</span>
-            <span class="chip-btn" data-filter="all" title="Бүгд">Бүгд</span>
-        </div>
-
-        <div class="grid">
-            <section class="card data-wrap" id="wrap-barimt" style="padding:12px">
-                <div class="loading" id="barimt-loading" aria-hidden="true">
-                    <div class="spinner"></div>
-                </div>
-                <h3>Бүх баримт</h3>
-                <div class="document-box" id="box-barimt">
-                    <div class="table-scroll">
-                        <table>
-                            <thead>
-                            <tr>
-                                <th>№</th>
-                                <th>Дэлгүүрийн дугаар</th>
-                                <th>Баримтын дугаар</th>
-                                <th>Сугалааны дугаар</th>
-                                <th>ДДТД</th>
-                                <th>Дэд ДДТД</th>
-                                <th>Борлуулалт</th>
-                            </tr>
-                            </thead>
-                            <tbody id="barimt-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <section class="card data-wrap" id="wrap-lottery" style="padding:12px">
-                <div class="loading" id="lottery-loading" aria-hidden="true">
-                    <div class="spinner"></div>
-                </div>
-                <h3>Сугалааны дугааргүй баримт</h3>
-                <div class="document-box" id="box-lottery">
-                    <div class="table-scroll">
-                        <table>
-                            <thead>
-                            <tr>
-                                <th>№</th>
-                                <th>Дэлгүүрийн дугаар</th>
-                                <th>Баримтын дугаар</th>
-                                <th>Сугалааны дугаар</th>
-                                <th>ДДТД</th>
-                                <th>Дэд ДДТД</th>
-                                <th>Борлуулалт</th>
-                            </tr>
-                            </thead>
-                            <tbody id="lottery-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </div>
-
-    <div class="pagination" id="pagination">
-        {% if has_prev %}
-            <button class="btn" onclick="fetchBarimt('{{ selected_date }}', {{ page|add:'-1' }})">Өмнөх</button>
-        {% endif %}
-        <span>Хуудас {{ page }} / {{ total_pages }}</span>
-        {% if has_next %}
-            <button class="btn" onclick="fetchBarimt('{{ selected_date }}', {{ page|add:'1' }})">Дараах</button>
-        {% endif %}
-    </div>
-
+    </main>
+{% endblock %}
+{% block extra_js %}
     <script>
         let isLoading = false;
         let cachedItems = [];
         let cachedMissing = [];
         let lastPageStartIndex = 0;
         let currentFilter = 'all';
+        let currentPage = 1;
+        let currentDate = '';
 
-        const prevNextButtons = () => Array.from(document.querySelectorAll('#pagination .btn, #fetchBtn'));
+        const prevNextButtons = () => Array.from(document.querySelectorAll('.pagination .btn, #fetchBtn'));
+
+        function updatePagination(data, date, page) {
+            const pager = document.getElementById("pagination-top");
+            pager.innerHTML = "";
+
+            // Өмнөх товч
+            const prevBtn = document.createElement("button");
+            prevBtn.className = "btn";
+            prevBtn.textContent = "‹ Өмнөх";
+            prevBtn.disabled = !data.has_prev;
+            prevBtn.onclick = () => fetchBarimt(date, page - 1);
+            if (data.has_prev) pager.appendChild(prevBtn);
+
+            // Хуудасны мэдээлэл
+            const span = document.createElement("span");
+            span.textContent = `Хуудас ${page} / ${data.total_pages || 1}`;
+            span.style.fontWeight = "600";
+            span.style.color = "var(--text)";
+            pager.appendChild(span);
+
+            // Дараах товч
+            const nextBtn = document.createElement("button");
+            nextBtn.className = "btn";
+            nextBtn.textContent = "Дараах ›";
+            nextBtn.disabled = !data.has_next;
+            nextBtn.onclick = () => fetchBarimt(date, page + 1);
+            if (data.has_next) pager.appendChild(nextBtn);
+        }
 
         function showLoading(which, on) {
             const overlay = document.getElementById(which === 'barimt' ? 'barimt-loading' : 'lottery-loading');
@@ -360,6 +401,12 @@
         function renderBarimt(list) {
             const body = document.getElementById("barimt-body");
             body.innerHTML = "";
+
+            if (list.length === 0) {
+                body.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--muted);">Өгөгдөл олдсонгүй</td></tr>';
+                return;
+            }
+
             list.forEach((item, i) => {
                 body.appendChild(makeRow(item, (lastPageStartIndex || 0) + i + 1));
             });
@@ -368,6 +415,12 @@
         function renderLottery() {
             const body = document.getElementById("lottery-body");
             body.innerHTML = "";
+
+            if (cachedMissing.length === 0) {
+                body.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--muted);">Сугалааны дугааргүй баримт байхгүй</td></tr>';
+                return;
+            }
+
             cachedMissing.forEach((item, i) => {
                 const tr = document.createElement("tr");
                 if (String(item.is_return).toLowerCase() === "true") {
@@ -389,6 +442,8 @@
         async function fetchBarimt(date, page = 1) {
             if (isLoading) return;
             isLoading = true;
+            currentPage = page;
+            currentDate = date;
 
             const apiUrl = "https://pp.cumongol.mn/api/bill/";
             const payload = {date, page};
@@ -412,33 +467,14 @@
 
                 renderBarimt(cachedItems);
                 renderLottery();
-
-                // pagination
-                const pager = document.getElementById("pagination");
-                pager.innerHTML = "";
-                const prevBtn = document.createElement("button");
-                prevBtn.className = "btn";
-                prevBtn.textContent = "Өмнөх";
-                prevBtn.disabled = !data.has_prev;
-                prevBtn.onclick = () => fetchBarimt(date, page - 1);
-                pager.appendChild(prevBtn);
-
-                const span = document.createElement("span");
-                span.textContent = `Хуудас ${page} / ${data.total_pages || 1}`;
-                pager.appendChild(span);
-
-                const nextBtn = document.createElement("button");
-                nextBtn.className = "btn";
-                nextBtn.textContent = "Дараах";
-                nextBtn.disabled = !data.has_next;
-                nextBtn.onclick = () => fetchBarimt(date, page + 1);
-                pager.appendChild(nextBtn);
+                updatePagination(data, date, page);
 
                 setLegendActive('all');
                 currentFilter = 'all';
 
             } catch (e) {
                 console.error("API Error:", e);
+                alert("Алдаа гарлаа. Дахин оролдоно уу.");
             } finally {
                 showLoading('barimt', false);
                 showLoading('lottery', false);
@@ -446,7 +482,6 @@
                 isLoading = false;
             }
         }
-
 
         function setLegendActive(which) {
             document.querySelectorAll('#legend .chip-btn').forEach(el => {
@@ -468,6 +503,10 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+            // Өнөөдрийн огноог default утга болгох
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("selected_date").value = today;
+
             document.getElementById("fetchBtn").addEventListener("click", () => {
                 const date = document.getElementById("selected_date").value;
                 if (!date) {

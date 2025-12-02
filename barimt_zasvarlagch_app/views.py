@@ -25,14 +25,6 @@ from requests.exceptions import HTTPError
 from django.core.management.base import BaseCommand
 
 import certifi
-import redis
-
-# Redis client
-redis_client = redis.Redis(
-    host='localhost',
-    port=6379,
-    decode_responses=True
-)
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
@@ -60,7 +52,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect("/")
+    return redirect('login')
 
 def group_required(group_name):
     def in_group(u):

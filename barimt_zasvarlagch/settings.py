@@ -149,3 +149,5 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # Ашиглах:
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+
+LOGOUT_REDIRECT_URL = 'login'  # Гарсны дараа login хуудас руу шилжинэ

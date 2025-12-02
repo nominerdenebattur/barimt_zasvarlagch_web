@@ -372,8 +372,23 @@
           suggestionList.innerHTML = '';
         }
       });
+    // CSRF token авах функц
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 
-      // ====== Баримт үүсгэх ======
+    const csrftoken = getCookie('csrftoken');
       // ====== Баримт үүсгэх (AI шалгалттай) ======
     document.getElementById('generateBtn').addEventListener('click', function () {
         const amount = document.getElementById('totalAmount').value.trim();
@@ -408,7 +423,7 @@
             companyFieldTypeInput: receiptType
         }).toString();
 
-        // 🆕 AI endpoint дуудах
+        // AI endpoint дуудах
         fetch(`/api/ebarimt/generate-ai/?${qs}`)
             .then(r => {
                 if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -417,18 +432,18 @@
             .then(data => {
                 console.log('AI Response:', data);
 
-                // ✅ Амжилттай
+                // Амжилттай
                 if (data.status === 'success') {
-                    alert(`✅ Баримт амжилттай үүслээ!\n\nBillID: ${data.billId}\nLottery: ${data.lottery}\n\nAI Validation: ${data.ai_validation.is_valid ? '✓ Зөв' : '✗ Алдаатай'}`);
+                    alert(`Баримт амжилттай үүслээ!\n\nBillID: ${data.billId}\nLottery: ${data.lottery}\n\nAI Validation: ${data.ai_validation.is_valid ? '✓ Зөв' : '✗ Алдаатай'}`);
 
                     // Хуудас refresh (эсвэл cachedBarimtuud-д нэмэх)
                     location.reload();
                 }
-                // ❌ AI validation амжилтгүй
+                // AI validation амжилтгүй
                 else if (data.status === 'validation_failed') {
                     const errors = data.errors.join('\n');
                     const suggestions = data.suggestions.join('\n');
-                    alert(`❌ AI алдаа илрүүллээ:\n\n${errors}\n\n💡 Санал:\n${suggestions}`);
+                    alert(`AI алдаа илрүүллээ:\n\n${errors}\n\n💡 Санал:\n${suggestions}`);
                 }
                 // ⚠️ Бусад алдаа
                 else {
@@ -437,7 +452,7 @@
             })
             .catch(err => {
                 console.error('Fetch error:', err);
-                alert(`🔴 Системийн алдаа:\n${err.message}\n\nДахин оролдоно уу.`);
+                alert(`Системийн алдаа:\n${err.message}\n\nДахин оролдоно уу.`);
             })
             .finally(() => {
                 // Loading state цуцлах
