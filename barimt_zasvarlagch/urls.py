@@ -31,7 +31,8 @@ urlpatterns = [
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('compare/', views.compare_view, name='compare'),
     path('delete/', views.delete_view, name='delete'),
-    path('api/ebarimt/generate-ai/', views.ebarimt_generate_with_ai, name='ebarimt_ai'),
+    path('api/company-lookup/', views.company_lookup, name='company_lookup'),
+    path('api/ebarimt/generate-ai/', views.ebarimt_generate_with_ai, name='generate_receipt_ai'),
 ]
 
 if settings.DEBUG:

@@ -585,82 +585,99 @@ def nuhun_shiveh_view(request):
 
 def ebarimt_generate_with_ai(request):
     """
-    AI шалгалттай баримт үүсгэх (Redis-гүй энгийн хувилбар)
+    AI шалгалттай баримт үүсгэх
     """
     try:
         # 1. Input авах
         total_amount = request.GET.get("totalAmount")
         company_reg = request.GET.get("companyId")
         store = request.GET.get("storeId")
-        bill_type = request.GET.get("companyFieldTypeInput")
+        bill_type = request.GET.get("companyFieldTypeInput", "1")
 
-        if not total_amount or not store:
-            return JsonResponse({
-                "status": "error",
-                "message": "Дүн болон дэлгүүрийн дугаар шаардлагатай"
-            }, status=400)
-
-        # 2. AI-аар шалгах
-        client = OpenAI(api_key=settings.OPENAI_API_KEY)
-
-        prompt = f"""
-Дараах баримтын мэдээллийг шалгаад JSON форматаар буцаа:
-
-Өгөгдөл:
-- Нийт дүн: {total_amount}
-- Регистр: {company_reg or "байхгүй"}
-- Дэлгүүр: {store}
-
-Шалгах зүйлс:
-1. Дүн сөрөг эсвэл 0 байж болохгүй
-2. Дүн 100,000,000-с их байж болохгүй
-3. Регистр байвал 7 оронтой эсэхийг шалга
-4. Дэлгүүрийн дугаар зөв эсэхийг шалга
-
-Заавал дараах JSON форматаар буцаа (бусад текст бичих хэрэггүй):
-{{
-    "is_valid": true немээс false,
-    "errors": ["алдааны жагсаалт"],
-    "suggestions": ["санал"],
-    "validated_data": {{
-        "totalAmount": "зассан дүн",
-        "companyReg": "зассан регистр эсвэл null",
-        "storeNo": "{store}",
-        "billType": "{bill_type or ('1' if company_reg else '3')}"
-    }}
-}}
-"""
-
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Та баримтын мэдээлэл шалгадаг AI туслах. Зөвхөн JSON буцаа."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            temperature=0.3,
-            response_format={"type": "json_object"}
-        )
-
-        # AI үр дүн авах
-        ai_result = json.loads(response.choices[0].message.content)
-
-        # 3. Алдаа байвал буцаах
-        if not ai_result.get("is_valid", False):
+        # Үндсэн validation
+        if not total_amount:
             return JsonResponse({
                 "status": "validation_failed",
-                "errors": ai_result.get("errors", []),
-                "suggestions": ai_result.get("suggestions", [])
+                "errors": ["Нийт дүн оруулна уу"],
+                "suggestions": ["Нийт дүн талбарыг бөглөнө үү"]
             }, status=400)
 
-        # 4. eBarimt API дуудах (таны одоогийн функц)
-        validated_data = ai_result.get("validated_data", {})
+        if not store:
+            return JsonResponse({
+                "status": "validation_failed",
+                "errors": ["Дэлгүүрийн дугаар оруулна уу"],
+                "suggestions": ["Салбар сонгоно уу"]
+            }, status=400)
 
+        # Дүнг тоо руу хөрвүүлэх
+        try:
+            amount_float = float(total_amount.replace(",", ""))
+        except ValueError:
+            return JsonResponse({
+                "status": "validation_failed",
+                "errors": ["Дүн буруу форматтай байна"],
+                "suggestions": ["Зөвхөн тоо оруулна уу"]
+            }, status=400)
+
+        # 2. AI шалгалт (OpenAI)
+        ai_validation_result = None
+        try:
+            client = OpenAI(api_key=settings.OPENAI_API_KEY)
+
+            prompt = f"""
+        Дараах баримтын мэдээллийг шалгаад JSON форматаар буцаа:
+        
+        Өгөгдөл:
+        - Нийт дүн: {total_amount}
+        - Байгууллагын регистр: {company_reg or "хоосон (хувь хүн)"}
+        - Дэлгүүрийн дугаар: {store}
+        - Баримтын төрөл: {bill_type} (1=хувь хүн, 3=байгууллага)
+        
+        Шалгах зүйлс:
+        1. Дүн эерэг тоо байх ёстой (0-с их)
+        2. Дүн 100,000,000-с бага байх ёстой
+        3. Хэрэв регистр байвал 7 оронтой байх ёстой
+        4. Баримтын төрөл зөв эсэх (регистр байвал 3, байхгүй бол 1)
+        
+        JSON формат:
+        {{
+            "is_valid": true эсвэл false,
+            "errors": ["алдааны жагсаалт"],
+            "suggestions": ["зөвлөмж"]
+        }}
+        """
+
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "Та баримтын мэдээлэл шалгадаг туслах. Зөвхөн JSON буцаа."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.2,
+                response_format={"type": "json_object"}
+            )
+
+            ai_validation_result = json.loads(response.choices[0].message.content)
+
+            # AI алдаа олсон бол
+            if not ai_validation_result.get("is_valid", True):
+                return JsonResponse({
+                    "status": "validation_failed",
+                    "errors": ai_validation_result.get("errors", ["AI шалгалт амжилтгүй"]),
+                    "suggestions": ai_validation_result.get("suggestions", []),
+                    "ai_validation": ai_validation_result
+                }, status=400)
+
+        except Exception as ai_error:
+            print(f"AI шалгалтын алдаа: {ai_error}")
+            # AI алдаа гарсан ч үргэлжлүүлнэ
+            ai_validation_result = {
+                "is_valid": True,
+                "errors": [],
+                "suggestions": ["AI шалгалт алгасав"]
+            }
+
+        # 3. eBarimt API дуудах
         data = {
             "stocks": [{
                 "measureUnit": "ширхэг",
@@ -668,64 +685,105 @@ def ebarimt_generate_with_ai(request):
                 "name": "Хүнсний бараа, ундаа, тамхины төрөлжсөн бус дэлгүүрийн жижиглэн худалдаа",
                 "barCode": "6212",
                 "qty": "1.00",
-                "totalAmount": str(validated_data.get("totalAmount")),
+                "totalAmount": str(total_amount),
                 "cityTax": "0.00",
-                "unitPrice": str(validated_data.get("totalAmount")),
+                "unitPrice": str(total_amount),
                 "vat": "1.00",
                 "discount": "0.00",
             }],
             "transID": "11120035110134",
-            "cashAmount": str(validated_data.get("totalAmount")),
+            "cashAmount": str(total_amount),
             "nonCashAmount": "0.00",
-            "amount": str(validated_data.get("totalAmount")),
+            "amount": str(total_amount),
+            "point": "0",
+            "bankTransactions": [],
             "cityTax": "0.00",
             "vat": "1.00",
-            "billType": validated_data.get("billType"),
-            "customerNo": str(validated_data.get("companyReg") or ""),
+            "billType": bill_type,
+            "customerNo": str(company_reg) if company_reg else "",
             "tenderType": "",
             "amountTendered": "0.00",
+            "kbTenderType": None,
+            "kb_usable_lp": None,
+            "tenderTypeCoupon": "",
+            "amountTenderedCoupon": "0.00",
         }
 
-        url = f"http://10.10.90.233/23/api/?store={store}put"
+        # Store дугаараар IP тодорхойлох
+        store_str = str(store).lstrip("0") or "0"
+        store_num = int(store_str)
+
+        if store_num > 450:
+            url = f"http://10.10.90.234/23/api/?store={store_str}put"
+        else:
+            url = f"http://10.10.90.233/23/api/?store={store_str}put"
+
         headers = {"Content-Type": "application/json"}
 
-        api_response = requests.post(url, headers=headers, data=json.dumps(data))
+        print(f"eBarimt Request URL: {url}")
+        print(f"eBarimt Request Data: {data}")
 
-        # 5. Амжилттай бол Database-д хадгалах
+        api_response = requests.post(url, headers=headers, data=json.dumps(data), timeout=30)
+
+        print(f"eBarimt Response Status: {api_response.status_code}")
+        print(f"eBarimt Response: {api_response.text}")
+
+        # 4. Хариу боловсруулах
         if api_response.status_code == 200:
-            response_json = api_response.json()
+            try:
+                response_json = api_response.json()
+                bill_id = response_json.get("billId", "")
+                sub_bill_id = response_json.get("subBillId", "")
+                lottery = response_json.get("lottery", "")
+            except Exception as e:
+                print(f"JSON parse алдаа: {e}")
+                bill_id = ""
+                sub_bill_id = ""
+                lottery = ""
 
+            # Database-д хадгалах
             obj = Barimt.objects.create(
-                billId=response_json.get("billId", ""),
-                subBillId=response_json.get("subBillId", ""),
-                lottery=response_json.get("lottery", ""),
-                totalAmount=validated_data.get("totalAmount"),
-                companyReg=validated_data.get("companyReg"),
+                billId=bill_id,
+                subBillId=sub_bill_id,
+                lottery=lottery,
+                totalAmount=total_amount,
+                companyReg=company_reg if company_reg else None,
                 storeNo=store,
                 created_by=request.user if request.user.is_authenticated else None,
             )
 
             return JsonResponse({
                 "status": "success",
-                "billId": obj.billId,
-                "subBillId": obj.subBillId,
-                "lottery": obj.lottery,
+                "billId": bill_id,
+                "subBillId": sub_bill_id,
+                "lottery": lottery,
                 "id": obj.id,
-                "ai_validation": {
-                    "is_valid": ai_result.get("is_valid"),
-                    "suggestions": ai_result.get("suggestions", [])
-                }
+                "created_by": obj.created_by.username if obj.created_by else None,
+                "ai_validation": ai_validation_result
             })
+
         else:
             return JsonResponse({
                 "status": "api_failed",
-                "message": f"eBarimt API алдаа: {api_response.status_code}"
+                "message": f"eBarimt API алдаа (HTTP {api_response.status_code})",
+                "errors": ["eBarimt сервертэй холбогдож чадсангүй"],
+                "suggestions": ["Дахин оролдоно уу", "Сүлжээний холболтоо шалгана уу"]
             }, status=500)
+
+    except requests.exceptions.Timeout:
+        return JsonResponse({
+            "status": "error",
+            "message": "eBarimt сервер хариу өгөхгүй байна",
+            "errors": ["Timeout алдаа"],
+            "suggestions": ["Хэсэг хугацааны дараа дахин оролдоно уу"]
+        }, status=504)
 
     except Exception as e:
         import traceback
-        print("Алдаа:", traceback.format_exc())
+        print(f"Системийн алдаа: {traceback.format_exc()}")
         return JsonResponse({
             "status": "error",
-            "message": str(e)
+            "message": str(e),
+            "errors": ["Системийн алдаа гарлаа"],
+            "suggestions": ["Админд хандана уу"]
         }, status=500)

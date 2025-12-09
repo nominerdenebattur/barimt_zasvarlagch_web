@@ -165,7 +165,7 @@
         padding: 20px 12px;
 
     }
-   /* Company name display */
+         /* Company name display */
         #companyNameDisplay {
             margin-top: 6px;
             padding: 8px 12px;
@@ -179,6 +179,143 @@
             from { opacity: 0; transform: translateY(-5px); }
             to { opacity: 1; transform: translateY(0); }
         }
+    /* AI Validation Log Box - Updated */
+    .ai-log-section {
+        margin-top: 16px;
+        border-top: 1px solid var(--border);
+        padding-top: 16px;
+    }
+
+    .ai-log-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        font-weight: 700;
+        font-size: 13px;
+        color: #374151;
+    }
+
+    .ai-log-header svg {
+        width: 16px;
+        height: 16px;
+        color: var(--brand);
+    }
+
+    .ai-log-box {
+        background: #f9fafb;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        max-height: 180px;
+        overflow-y: auto;
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .ai-log-box::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .ai-log-box::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .ai-log-box::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
+    }
+
+    .log-entry {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 4px;
+        margin-bottom: 4px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        animation: slideIn 0.2s ease;
+    }
+
+    .log-entry:last-child {
+        margin-bottom: 0;
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .log-entry .timestamp {
+        color: #9ca3af;
+        font-size: 11px;
+        flex-shrink: 0;
+    }
+
+    .log-entry .status-icon {
+        flex-shrink: 0;
+        font-weight: 600;
+        font-size: 11px;
+    }
+
+    .log-entry .message {
+        color: #374151;
+        flex: 1;
+    }
+
+    /* Status colors */
+    .log-entry.info {
+        border-left: 3px solid var(--brand);
+    }
+    .log-entry.info .status-icon {
+        color: var(--brand);
+    }
+
+    .log-entry.success {
+        border-left: 3px solid #10b981;
+        background: #f0fdf4;
+    }
+    .log-entry.success .status-icon {
+        color: #10b981;
+    }
+
+    .log-entry.error {
+        border-left: 3px solid #ef4444;
+        background: #fef2f2;
+    }
+    .log-entry.error .status-icon {
+        color: #ef4444;
+    }
+
+    .log-entry.warning {
+        border-left: 3px solid #f59e0b;
+        background: #fffbeb;
+    }
+    .log-entry.warning .status-icon {
+        color: #f59e0b;
+    }
+
+    .log-entry.loading {
+        border-left: 3px solid #6b7280;
+    }
+    .log-entry.loading .status-icon {
+        color: #6b7280;
+        animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+    }
+
+    .log-empty {
+        color: #9ca3af;
+        text-align: center;
+        padding: 24px 12px;
+        font-size: 12px;
+    }
 
         /* Responsive */
         @media (max-width: 900px) {
@@ -237,6 +374,19 @@
 
     <div class="submit-section">
       <button id="generateBtn" class="btn" type="button">Баримт үүсгэх</button>
+    </div>
+    <!-- AI Шалгалтын лог -->
+    <div class="ai-log-section">
+        <div class="ai-log-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+            </svg>
+            Шалгалтын явц
+        </div>
+        <div class="ai-log-box" id="aiLogBox">
+            <div class="log-empty">Баримт үүсгэхэд шалгалтын явц энд харагдана</div>
+        </div>
     </div>
 
   </section>
@@ -317,22 +467,71 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script id="barimtuud-data" type="application/json">
-        {{ barimtuud_json|safe }}
-    </script>
+<script id="barimtuud-data" type="application/json">
+    {{ barimtuud_json|safe }}
+</script>
 
 <script>
-    {#// ====== Баримтын дата-г JSON-оос унших ======#}
-    {#const rawData = document.getElementById('barimtuud-data').textContent;#}
-    {#let cachedBarimtuud = rawData.trim() ? JSON.parse(rawData) : [];#}
 
-      // Автоматаар баримтын төрөл солих (companyReg бөглөгдвөл 3, хоосон бол 1)
-      document.getElementById('companyReg').addEventListener('input', function () {
+    // ====== AI Log функцууд ======
+    function getTimestamp() {
+        const now = new Date();
+        return now.toLocaleTimeString('mn-MN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    function addLog(message, type = 'info') {
+        const logBox = document.getElementById('aiLogBox');
+
+        const emptyMsg = logBox.querySelector('.log-empty');
+        if (emptyMsg) emptyMsg.remove();
+
+        const icons = {
+            'info': '[i]',
+            'success': '[+]',
+            'error': '[x]',
+            'warning': '[!]',
+            'loading': '[~]'
+        };
+
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${type}`;
+        entry.innerHTML = `
+            <span class="timestamp">[${getTimestamp()}]</span>
+            <span class="status-icon">${icons[type]}</span>
+            <span class="message">${message}</span>
+        `;
+
+        logBox.appendChild(entry);
+        logBox.scrollTop = logBox.scrollHeight;
+
+        return entry;
+    }
+
+    function updateLog(entry, message, type) {
+        const icons = {
+            'info': '[i]',
+            'success': '[+]',
+            'error': '[x]',
+            'warning': '[!]',
+            'loading': '[~]'
+        };
+        entry.className = `log-entry ${type}`;
+        entry.querySelector('.status-icon').textContent = icons[type];
+        entry.querySelector('.message').textContent = message;
+    }
+
+    function clearLog() {
+        const logBox = document.getElementById('aiLogBox');
+        logBox.innerHTML = '<div class="log-empty">Баримт үүсгэхэд шалгалтын явц энд харагдана...</div>';
+    }
+
+    // ====== Байгууллагын регистр шалгах ======
+    document.getElementById('companyReg').addEventListener('input', function () {
         const hasReg = this.value.trim().length > 0;
         document.getElementById('companyFieldTypeInput').value = hasReg ? '3' : '1';
-      });
+    });
 
-      document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
         const companyRegInput = document.getElementById('companyReg');
         const companyNameDisplay = document.getElementById('companyNameDisplay');
         const companyFieldType = document.getElementById('companyFieldTypeInput');
@@ -344,7 +543,6 @@
 
             clearTimeout(debounceTimer);
 
-            // 7 оронтой болтол хүлээнэ
             if (regNo.length < 7) {
                 companyNameDisplay.style.display = 'none';
                 companyFieldType.value = '1';
@@ -357,9 +555,8 @@
         });
 
         async function fetchCompanyName(regNo) {
-            // Loading харуулах
             companyNameDisplay.style.display = 'block';
-            companyNameDisplay.innerHTML = '<span style="color: #666;">🔄 Хайж байна...</span>';
+            companyNameDisplay.innerHTML = '<span style="color: #666;">Хайж байна...</span>';
             companyNameDisplay.style.background = '#f8f9fa';
             companyNameDisplay.style.border = '1px solid #dee2e6';
 
@@ -368,14 +565,12 @@
                 const data = await response.json();
 
                 if (data.success && data.name) {
-                    // Амжилттай - ногоон дэвсгэр
                     companyNameDisplay.innerHTML = `<strong>${data.name}</strong>`;
                     companyNameDisplay.style.background = '#d1e7dd';
                     companyNameDisplay.style.border = '1px solid #a3cfbb';
                     companyNameDisplay.style.color = '#0a3622';
-                    companyFieldType.value = '3'; // Байгууллага
+                    companyFieldType.value = '3';
                 } else {
-                    // Олдсонгүй - улаан дэвсгэр
                     companyNameDisplay.innerHTML = 'Байгууллага олдсонгүй';
                     companyNameDisplay.style.background = '#f8d7da';
                     companyNameDisplay.style.border = '1px solid #f1aeb5';
@@ -390,90 +585,103 @@
             }
         }
     });
-      // ====== Салбар хайлт (autocomplete) ======
-      const branchInput = document.getElementById('branchName');
-      const suggestionList = document.getElementById('suggestions');
-      const storeIdInput = document.getElementById('storeId');
 
-      // Debounce helper
-      let debounceTimer = null;
-      function debounce(fn, delay) {
+    // ====== Салбар хайлт (autocomplete) ======
+    const branchInput = document.getElementById('branchName');
+    const suggestionList = document.getElementById('suggestions');
+    const storeIdInput = document.getElementById('storeId');
+
+    let debounceTimer = null;
+    function debounce(fn, delay) {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(fn, delay);
-      }
+    }
 
-      //auto complete 2-s deesh useg bichij baij salbariin jagshaalt garch irne
-      branchInput.addEventListener('input', function () {
+    branchInput.addEventListener('input', function () {
         const q = branchInput.value.trim();
         if (q.length < 2) {
-          suggestionList.innerHTML = '';
-          return;
+            suggestionList.innerHTML = '';
+            return;
         }
         debounce(() => {
-          fetch('https://pp.cumongol.mn/api/list-biz/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ bizloc_nm: q }) //json format ruu hurvuuleh
-          })
+            fetch('https://pp.cumongol.mn/api/list-biz/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bizloc_nm: q })
+            })
             .then(r => r.json())
             .then(data => {
-              suggestionList.innerHTML = '';
-              const results = (data && data.results) ? data.results : [];
-              if (!results.length) return;
+                suggestionList.innerHTML = '';
+                const results = (data && data.results) ? data.results : [];
+                if (!results.length) return;
 
-              results.forEach(item => {
-                const li = document.createElement('li');
-                li.textContent = `${item.bizloc_nm}  —  ${item.bizloc_cd}`;
-                li.dataset.code = item.bizloc_cd;
-                li.addEventListener('click', () => {
-                  branchInput.value = item.bizloc_nm;
-                  storeIdInput.value = item.bizloc_cd;
-                  suggestionList.innerHTML = '';
+                results.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = `${item.bizloc_nm}  —  ${item.bizloc_cd}`;
+                    li.dataset.code = item.bizloc_cd;
+                    li.addEventListener('click', () => {
+                        branchInput.value = item.bizloc_nm;
+                        storeIdInput.value = item.bizloc_cd;
+                        suggestionList.innerHTML = '';
+                    });
+                    suggestionList.appendChild(li);
                 });
-                suggestionList.appendChild(li);
-              });
             })
             .catch(err => {
-              console.error('API request error:', err);
-              suggestionList.innerHTML = '<li style="color:red;">Алдаа гарлаа</li>';
+                console.error('API request error:', err);
+                suggestionList.innerHTML = '<li style="color:red;">Алдаа гарлаа</li>';
             });
-        }, 300); //hereglegch bichhe bolisnos 300ms daraa fetch ajillana
-      });
+        }, 300);
+    });
 
-      // Click outside to close suggestions
-      document.addEventListener('click', (e) => {
+    document.addEventListener('click', (e) => {
         if (!e.target.closest('#suggestions') && e.target !== branchInput) {
-          suggestionList.innerHTML = '';
+            suggestionList.innerHTML = '';
         }
-      });
+    });
 
-      // ====== Баримт үүсгэх ======
-      // ====== Баримт үүсгэх (AI шалгалттай) ======
-    document.getElementById('generateBtn').addEventListener('click', function () {
+    // ====== Баримт үүсгэх (AI шалгалттай + Лог) ======
+    document.getElementById('generateBtn').addEventListener('click', async function () {
         const amount = document.getElementById('totalAmount').value.trim();
         const companyRegNo = document.getElementById('companyReg').value.trim();
         const storeNo = document.getElementById('storeId').value.trim();
         const receiptType = document.getElementById('companyFieldTypeInput').value.trim();
 
-        // Validation
+        clearLog();
+
         if (!amount) {
-            alert("Нийт дүн оруулна уу.");
+            addLog('Нийт дүн оруулна уу!', 'error');
             return;
         }
         if (!storeNo) {
-            alert("Дэлгүүрийн дугаар оруулна уу.");
+            addLog('Дэлгүүрийн дугаар оруулна уу!', 'error');
             return;
         }
 
-        if (!confirm(`Баримт үүсгэхэд итгэлтэй байна уу?\nНийт дүн: ${amount}\nБайгууллагын регистр: ${companyRegNo || '-'}\nДэлгүүрийн дугаар: ${storeNo}\n`)) {
-            return;
-        }
+        addLog('Баримт үүсгэж эхэллээ...', 'info');
 
-        // Loading state
+        {#if (!confirm(`Баримт үүсгэхэд итгэлтэй байна уу?\nНийт дүн: ${amount}\nБайгууллагын регистр: ${companyRegNo || '-'}\nДэлгүүрийн дугаар: ${storeNo}\n`)) {#}
+        {#    addLog('Хэрэглэгч цуцаллаа', 'warning');#}
+        {#    return;#}
+        {#}#}
+
         const generateBtn = document.getElementById('generateBtn');
         const originalText = generateBtn.textContent;
-        generateBtn.textContent = ' AI шалгаж байна...';
+        generateBtn.textContent = 'AI шалгаж байна...';
         generateBtn.disabled = true;
+
+        addLog(`Нийт дүн: ${Number(amount).toLocaleString()} MNT`, 'info');
+        addLog(`Дэлгүүрийн дугаар: ${storeNo}`, 'info');
+        if (companyRegNo) {
+            addLog(`Байгууллагын регистр: ${companyRegNo}`, 'info');
+        }
+
+        const step1 = addLog('Оруулсан өгөгдлийг шалгаж байна...', 'loading');
+
+        await sleep(500);
+        updateLog(step1, 'Оруулсан өгөгдөл зөв байна', 'success');
+
+        const step2 = addLog('AI шалгалт хийж байна (GPT-4)...', 'loading');
 
         const qs = new URLSearchParams({
             totalAmount: amount,
@@ -482,58 +690,88 @@
             companyFieldTypeInput: receiptType
         }).toString();
 
-        // 🆕 AI endpoint дуудах
-        fetch(`/api/ebarimt/generate-ai/?${qs}`)
-            .then(r => {
-                if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                return r.json();
-            })
-            .then(data => {
-                console.log('AI Response:', data);
+        try {
+            const response = await fetch(`/api/ebarimt/generate-ai/?${qs}`);
 
-                // ✅ Амжилттай
-                if (data.status === 'success') {
-                    alert(`✅ Баримт амжилттай үүслээ!\n\nBillID: ${data.billId}\nLottery: ${data.lottery}\n\nAI Validation: ${data.ai_validation.is_valid ? '✓ Зөв' : '✗ Алдаатай'}`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
 
-                    // Хуудас refresh (эсвэл cachedBarimtuud-д нэмэх)
-                    location.reload();
+            const data = await response.json();
+            console.log('AI Response:', data);
+
+            if (data.ai_validation) {
+                if (data.ai_validation.is_valid) {
+                    updateLog(step2, 'AI шалгалт амжилттай - Алдаа олдсонгүй', 'success');
+                } else {
+                    updateLog(step2, 'AI шалгалт - Анхааруулга илэрсэн', 'warning');
+
+                    if (data.ai_validation.errors) {
+                        data.ai_validation.errors.forEach(err => {
+                            addLog(`AI: ${err}`, 'warning');
+                        });
+                    }
                 }
-                // ❌ AI validation амжилтгүй
-                else if (data.status === 'validation_failed') {
-                    const errors = data.errors.join('\n');
-                    const suggestions = data.suggestions.join('\n');
-                    alert(`❌ AI алдаа илрүүллээ:\n\n${errors}\n\n💡 Санал:\n${suggestions}`);
+            }
+
+            if (data.status === 'success') {
+                const step3 = addLog('eBarimt API руу илгээж байна...', 'loading');
+                await sleep(300);
+                updateLog(step3, 'eBarimt API хариу амжилттай', 'success');
+
+                addLog(`ДДТД: ${data.billId}`, 'success');
+                addLog(`Сугалааны дугаар: ${data.lottery}`, 'success');
+                addLog('Баримт амжилттай үүслээ!', 'success');
+
+                setTimeout(() => location.reload(), 2000);
+            }
+            else if (data.status === 'validation_failed') {
+                updateLog(step2, 'AI шалгалт амжилтгүй', 'error');
+
+                data.errors.forEach(err => {
+                    addLog(err, 'error');
+                });
+
+                if (data.suggestions && data.suggestions.length > 0) {
+                    addLog('Саналууд:', 'info');
+                    data.suggestions.forEach(s => {
+                        addLog(s, 'info');
+                    });
                 }
-                // ⚠️ Бусад алдаа
-                else {
-                    alert(`⚠️ Алдаа гарлаа: ${data.message || 'Тодорхойгүй алдаа'}`);
-                }
-            })
-            .catch(err => {
-                console.error('Fetch error:', err);
-                alert(`🔴 Системийн алдаа:\n${err.message}\n\nДахин оролдоно уу.`);
-            })
-            .finally(() => {
-                // Loading state цуцлах
-                generateBtn.textContent = originalText;
-                generateBtn.disabled = false;
-            });
+            }
+            else {
+                addLog(`Алдаа: ${data.message || 'Тодорхойгүй алдаа'}`, 'error');
+            }
+
+        } catch (err) {
+            console.error('Fetch error:', err);
+            updateLog(step2, 'Системийн алдаа гарлаа', 'error');
+            addLog(`${err.message}`, 'error');
+            addLog('Дахин оролдоно уу', 'warning');
+        } finally {
+            generateBtn.textContent = originalText;
+            generateBtn.disabled = false;
+        }
     });
 
-      // ====== Excel татах ======
-      document.getElementById('exportBtn').addEventListener('click', function () {
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // ====== Excel татах ======
+    document.getElementById('exportBtn').addEventListener('click', function () {
         const amount = document.getElementById('totalAmount').value.trim();
         const companyRegNo = document.getElementById('companyReg').value.trim();
         const storeNo = document.getElementById('storeId').value.trim();
 
         const qs = new URLSearchParams({
-          amount: amount,
-          companyReg: companyRegNo,
-          storeId: storeNo
+            amount: amount,
+            companyReg: companyRegNo,
+            storeId: storeNo
         }).toString();
 
         window.location.href = `/export_excel/?${qs}`;
-      });
+    });
 
     // ====== Хуудаслалт ба render ======
     const ITEMS_PER_PAGE = 15;
@@ -547,7 +785,7 @@
 
         const start = (page - 1) * ITEMS_PER_PAGE;
         const end = start + ITEMS_PER_PAGE;
-        const pageItems = list.slice(start, end); // 1–15, 16–30, ...
+        const pageItems = list.slice(start, end);
 
         pageItems.forEach((barimt, idx) => {
             const tr = document.createElement('tr');
@@ -566,16 +804,13 @@
             tbody.appendChild(tr);
         });
 
-        // Pagination
         const totalPages = Math.ceil(list.length / ITEMS_PER_PAGE);
         const paginationDiv = document.querySelector('.pagination');
         const paginationSpan = paginationDiv.querySelector('span');
         paginationSpan.textContent = `Хуудас ${page} / ${totalPages || 1}`;
 
-        // Өмнөх/Дараах товчлуурууд
         paginationDiv.querySelectorAll('a').forEach(a => a.remove());
 
-        // Өмнөх товч
         if (page > 1) {
             const prev = document.createElement('a');
             prev.href = "#";
@@ -596,28 +831,22 @@
     }
 
     function updateList() {
-        // 1. Filter: show deleted
         filteredList = [...cachedBarimtuud];
         if (showDeletedCheckbox.checked) filteredList = filteredList.filter(b => b.is_deleted);
 
-        // 2. Filter: selected date
         const selectedDate = document.getElementById('selected_date').value;
         if (selectedDate) filteredList = filteredList.filter(b => b.created.startsWith(selectedDate));
 
-        // 3. Page check
         const totalPages = Math.ceil(filteredList.length / ITEMS_PER_PAGE);
         if (currentPage > totalPages) currentPage = totalPages || 1;
 
-        // 4. Render
         renderBarimt(filteredList, currentPage);
     }
 
-    // Event
     showDeletedCheckbox.addEventListener('change', () => { currentPage = 1; updateList(); });
     document.getElementById('selected_date').addEventListener('change', () => { currentPage = 1; updateList(); });
 
-    // Анх харуулах
     updateList();
 
-    </script>
+</script>
 {% endblock %}
