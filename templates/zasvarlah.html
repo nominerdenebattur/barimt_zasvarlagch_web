@@ -165,6 +165,21 @@
         padding: 20px 12px;
 
     }
+   /* Company name display */
+        #companyNameDisplay {
+            margin-top: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* Responsive */
         @media (max-width: 900px) {
             main {
@@ -198,6 +213,7 @@
       <label for="companyReg">Байгууллагын регистерийн дугаар</label>
       <small class="helper">Байгууллага биш бол хоосон үлдээнэ үү!</small>
       <input type="text" name="companyReg" id="companyReg" placeholder="Ж: 1234567">
+      <div id="companyNameDisplay"></div>
     </div>
 
     <div class="form-group">
@@ -316,6 +332,64 @@
         document.getElementById('companyFieldTypeInput').value = hasReg ? '3' : '1';
       });
 
+      document.addEventListener('DOMContentLoaded', function() {
+        const companyRegInput = document.getElementById('companyReg');
+        const companyNameDisplay = document.getElementById('companyNameDisplay');
+        const companyFieldType = document.getElementById('companyFieldTypeInput');
+
+        let debounceTimer;
+
+        companyRegInput.addEventListener('input', function() {
+            const regNo = this.value.trim();
+
+            clearTimeout(debounceTimer);
+
+            // 7 оронтой болтол хүлээнэ
+            if (regNo.length < 7) {
+                companyNameDisplay.style.display = 'none';
+                companyFieldType.value = '1';
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetchCompanyName(regNo);
+            }, 400);
+        });
+
+        async function fetchCompanyName(regNo) {
+            // Loading харуулах
+            companyNameDisplay.style.display = 'block';
+            companyNameDisplay.innerHTML = '<span style="color: #666;">🔄 Хайж байна...</span>';
+            companyNameDisplay.style.background = '#f8f9fa';
+            companyNameDisplay.style.border = '1px solid #dee2e6';
+
+            try {
+                const response = await fetch(`/api/company-lookup/?reg=${regNo}`);
+                const data = await response.json();
+
+                if (data.success && data.name) {
+                    // Амжилттай - ногоон дэвсгэр
+                    companyNameDisplay.innerHTML = `<strong>${data.name}</strong>`;
+                    companyNameDisplay.style.background = '#d1e7dd';
+                    companyNameDisplay.style.border = '1px solid #a3cfbb';
+                    companyNameDisplay.style.color = '#0a3622';
+                    companyFieldType.value = '3'; // Байгууллага
+                } else {
+                    // Олдсонгүй - улаан дэвсгэр
+                    companyNameDisplay.innerHTML = 'Байгууллага олдсонгүй';
+                    companyNameDisplay.style.background = '#f8d7da';
+                    companyNameDisplay.style.border = '1px solid #f1aeb5';
+                    companyNameDisplay.style.color = '#58151c';
+                    companyFieldType.value = '1';
+                }
+            } catch (error) {
+                companyNameDisplay.innerHTML = 'Алдаа гарлаа';
+                companyNameDisplay.style.background = '#fff3cd';
+                companyNameDisplay.style.border = '1px solid #ffe69c';
+                companyNameDisplay.style.color = '#664d03';
+            }
+        }
+    });
       // ====== Салбар хайлт (autocomplete) ======
       const branchInput = document.getElementById('branchName');
       const suggestionList = document.getElementById('suggestions');

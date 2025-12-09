@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.login_view, name='login'),
     path('zasvarlah/', views.zasvarlah, name='zasvarlah'),
+    path('api/company-lookup/', views.company_lookup, name='company_lookup'),
     path('generate/', views.ebarimt_generate, name='generate'),
     path('export_excel/', views.export_excel, name='export_excel'),
     # path('register/', views.register_view, name='register'),

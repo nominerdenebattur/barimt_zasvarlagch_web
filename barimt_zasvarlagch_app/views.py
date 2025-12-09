@@ -114,6 +114,26 @@ def zasvarlah(request):
         },
     )
 
+
+def company_lookup(request):
+    reg_no = request.GET.get('reg', '')
+
+    if not reg_no or len(reg_no) < 7:
+        return JsonResponse({'success': False, 'name': None})
+
+    try:
+        # eBarimt API
+        api_url = f"http://10.10.90.233/check_reg_no/?reg_no={reg_no}"
+        response = requests.get(api_url, timeout=5)
+        data = response.json()
+
+        if data.get('name'):
+            return JsonResponse({'success': True, 'name': data['name']})
+
+    except Exception as e:
+        print(f"Error: {e}")
+
+    return JsonResponse({'success': False, 'name': None})
 def ebarimt_generate(request):
     # === Input Data ===
     print("Current user:", request.user)
