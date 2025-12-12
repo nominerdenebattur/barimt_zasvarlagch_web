@@ -71,3 +71,85 @@ class Ebarimt_zadargaa_4(models.Model):
 
         def __str__(self):
             return self.posRno
+
+
+class DownloadSchedule(models.Model):
+    """Баримт татах хүсэлтийн хуваарь"""
+
+    STATUS_CHOICES = [
+        (0, 'Нийт борлуулалтын баримт'),
+        (4, 'Багцын толгой баримт'),
+    ]
+
+    DOWNLOAD_STATUS_CHOICES = [
+        ('pending', 'Хүлээгдэж байна'),
+        ('processing', 'Татагдаж байна'),
+        ('completed', 'Дууссан'),
+        ('failed', 'Алдаа гарсан'),
+        ('cancelled', 'Цуцлагдсан'),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Хэрэглэгч',
+        related_name='download_schedules'
+    )
+    start_date = models.DateField(verbose_name='Эхлэх огноо')
+    end_date = models.DateField(verbose_name='Дуусах огноо')
+    status = models.IntegerField(
+        choices=STATUS_CHOICES,
+        default=4,
+        verbose_name='Баримтын төрөл'
+    )
+    download_status = models.CharField(
+        max_length=20,
+        choices=DOWNLOAD_STATUS_CHOICES,
+        default='pending',
+        verbose_name='Таталтын төлөв'
+    )
+
+    # Үр дүн
+    file_path = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+        verbose_name='Файлын зам'
+    )
+    total_records = models.IntegerField(
+        default=0,
+        verbose_name='Нийт бичлэг'
+    )
+    error_message = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='Алдааны мэдээлэл'
+    )
+
+    # Огноо
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Үүсгэсэн огноо'
+    )
+    started_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name='Эхэлсэн огноо'
+    )
+    completed_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name='Дууссан огноо'
+    )
+
+    class Meta:
+        verbose_name = 'Таталтын хуваарь'
+        verbose_name_plural = 'Таталтын хуваарьууд'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.start_date} to {self.end_date}"
+
+    def get_status_name(self):
+        """Файлын нэрэнд ашиглах status нэр"""
+        return 'niit_borluulalt' if self.status == 0 else 'bagtsiin_tolgoi'

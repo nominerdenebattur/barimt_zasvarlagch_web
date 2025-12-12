@@ -1,3 +1,4 @@
+import io
 import os
 import pandas as pd
 import requests
@@ -7,9 +8,11 @@ from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.utils.datetime_safe import datetime
+from django.views.decorators.http import require_http_methods
 from openai import OpenAI
 
 from .models import Barimt, Ebarimt_zadargaa_0, Ebarimt_zadargaa_4
+from .models import DownloadSchedule
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.utils import timezone
@@ -23,7 +26,8 @@ from django.core.paginator import Paginator
 from django.core import serializers
 from requests.exceptions import HTTPError
 from django.core.management.base import BaseCommand
-
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import certifi
 def login_view(request):
     if request.method == "POST":
@@ -450,40 +454,200 @@ def fetch_and_save_barimt(status, date):
 
         return objs
 def compare_view(request):
-    selected_date = request.GET.get("selected_date", None)
-    check_total = request.GET.get("checkTotal")
-    check_batch = request.GET.get("checkBatch")
-
-    barimtuud = []
-
-    # Огноогоор шүүх
-    filters = {}
-    if selected_date:
-        filters["posRdate"] = selected_date
-        date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
-
-        # Нийт борлуулалтын баримт
-        if check_total:
-            barimtuud += fetch_and_save_barimt(status=0, date=date_obj)
-
-        # Багцын толгой баримт
-        if check_batch:
-            barimtuud += fetch_and_save_barimt(status=4, date=date_obj)
-
-    # Давхардалтыг арилгах (posRno-р ялгах)
-    seen_posRno = set()
-    unique_barimtuud = []
-    for b in barimtuud:
-        if b.posRno not in seen_posRno:
-            unique_barimtuud.append(b)
-            seen_posRno.add(b.posRno)
+    """Баримт харьцуулах болон татах view"""
 
     context = {
-        "barimtuud": unique_barimtuud,
-        "selected_date": selected_date,
-        "comparison_result": True,
+        'comparison_result': False,
+        'barimtuud': [],
+        'start_date': request.GET.get('start_date', ''),
+        'end_date': request.GET.get('end_date', ''),
+        'status': request.GET.get('status', '4'),
+        'pending_schedules': [],
     }
-    return render(request, "tailan.html", context)
+
+    # Хэрэглэгчийн хүлээгдэж буй таталтууд
+    if request.user.is_authenticated:
+        context['pending_schedules'] = DownloadSchedule.objects.filter(
+            user=request.user,
+            download_status__in=['pending', 'processing']
+        ).order_by('-created_at')[:5]
+
+    # Хүснэгтэнд харуулах хүсэлт
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
+    status = int(request.GET.get('status', 4))
+
+    if start_date_str and end_date_str:
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+            all_data = []
+            current_date = start_date
+
+            while current_date <= end_date:
+                data = fetch_ebarimt_data(current_date, status)
+                if data:
+                    all_data.extend(data)
+                current_date += timedelta(days=1)
+
+            context['comparison_result'] = True
+            context['barimtuud'] = all_data
+
+        except ValueError as e:
+            context['error'] = f'Огнооны формат буруу: {e}'
+
+    return render(request, 'tailan.html', context)
+
+
+def fetch_ebarimt_data(date_obj, status):
+    """eBarimt API-с өгөгдөл татах"""
+
+    TOKEN_URL = "https://auth.itc.gov.mn/auth/realms/ITC/protocol/openid-connect/token"
+    SERVICE_URL = "https://api.ebarimt.mn/api/tpi/receipt/getSalesTotalData"
+    API_KEY = "ae7368b03a55e135398668d964b5176e3e7f9c4f"
+
+    TOKEN_PAYLOAD = {
+        "client_id": "invoice",
+        "grant_type": "password",
+        "username": "ЖЮ00220821",
+        "password": "Saiko@0208"
+    }
+
+    try:
+        # Token авах
+        token_response = requests.post(TOKEN_URL, data=TOKEN_PAYLOAD, timeout=30)
+        token_response.raise_for_status()
+        access_token = token_response.json().get("access_token")
+
+        if not access_token:
+            return None
+
+        # Өгөгдөл татах
+        headers = {
+            "x-api-key": API_KEY,
+            "Authorization": f"Bearer {access_token}"
+        }
+
+        request_payload = {
+            "year": str(date_obj.year),
+            "month": str(date_obj.month),
+            "day": str(date_obj.day),
+            "status": status,
+            "startCount": 1,
+            "endCount": 250000
+        }
+
+        response = requests.post(SERVICE_URL, headers=headers, json=request_payload, timeout=120)
+        response.raise_for_status()
+
+        if response.text:
+            return response.json().get('data', {}).get('list', [])
+        return []
+
+    except Exception as e:
+        print(f"eBarimt API алдаа: {e}")
+        return None
+
+
+@login_required
+@require_http_methods(["POST"])
+def schedule_download(request):
+    """Таталтын хүсэлт хадгалах (шөнийн 1 цагт ажиллана)"""
+
+    start_date_str = request.POST.get('start_date')
+    end_date_str = request.POST.get('end_date')
+    status = int(request.POST.get('status', 4))
+
+    # Validation
+    if not start_date_str or not end_date_str:
+        return JsonResponse({
+            'success': False,
+            'message': 'Эхлэх болон дуусах огноог оруулна уу'
+        }, status=400)
+
+    try:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Огнооны формат буруу'
+        }, status=400)
+
+    if start_date > end_date:
+        return JsonResponse({
+            'success': False,
+            'message': 'Эхлэх огноо дуусах огнооноос хойно байж болохгүй'
+        }, status=400)
+
+    # Status шалгах (зөвхөн 0 ба 4)
+    if status not in [0, 4]:
+        return JsonResponse({
+            'success': False,
+            'message': 'Баримтын төрөл буруу'
+        }, status=400)
+
+    # DB-д хадгалах
+    schedule = DownloadSchedule.objects.create(
+        user=request.user,
+        start_date=start_date,
+        end_date=end_date,
+        status=status,
+        download_status='pending'
+    )
+
+    # Сарын folder нэр
+    month_names = ['1-р сар', '2-р сар', '3-р сар', '4-р сар', '5-р сар', '6-р сар',
+                   '7-р сар', '8-р сар', '9-р сар', '10-р сар', '11-р сар', '12-р сар']
+    folder_name = f"C:\\{start_date.year}_{month_names[start_date.month - 1]}_задаргаа\\"
+
+    return JsonResponse({
+        'success': True,
+        'message': 'Таталт шөнийн 1 цагт эхэлнэ',
+        'schedule_id': schedule.id,
+        'folder': folder_name
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def cancel_schedule(request):
+    """Таталтын хүсэлтийг цуцлах"""
+
+    schedule_id = request.POST.get('schedule_id')
+
+    if not schedule_id:
+        return JsonResponse({
+            'success': False,
+            'message': 'Schedule ID оруулна уу'
+        }, status=400)
+
+    try:
+        schedule = DownloadSchedule.objects.get(
+            id=schedule_id,
+            user=request.user
+        )
+    except DownloadSchedule.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Таталт олдсонгүй'
+        }, status=404)
+
+    if schedule.download_status not in ['pending', 'processing']:
+        return JsonResponse({
+            'success': False,
+            'message': f'Таталтыг цуцлах боломжгүй'
+        }, status=400)
+
+    # Цуцлах
+    schedule.download_status = 'cancelled'
+    schedule.save()
+
+    return JsonResponse({
+        'success': True,
+        'message': 'Таталт цуцлагдлаа'
+    })
 
 def user_groups(request):
     if request.user.is_authenticated:

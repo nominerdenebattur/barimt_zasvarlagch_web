@@ -1,36 +1,32 @@
 {% extends "base.html" %}
 
-{% block title %}Файл харьцуулах{% endblock %}
+{% block title %}Баримт татах{% endblock %}
 
 {% block extra_head %}
 <style>
 main {
     display: grid;
-    {#grid-template-columns: 320px 1fr;#}
     gap: 24px;
     align-items: start;
     padding: 16px;
 }
 
 .card {
-    background: var(--card);
-    border: 1px solid var(--border);
+    background: var(--card, #fff);
+    border: 1px solid var(--border, #e5e7eb);
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,.04);
 }
 
 .document-section {
     padding: 16px;
-    grid-template-columns: 320px 1fr;
 }
 
 .document-box {
     max-height: 70vh;
     overflow: auto;
     border-radius: 10px;
-    border: 1px solid var(--border);
-
-
+    border: 1px solid var(--border, #e5e7eb);
 }
 
 table {
@@ -41,7 +37,7 @@ table {
 thead th {
     position: sticky;
     top: 0;
-    background: var(--brand);
+    background: var(--brand, #3b82f6);
     color: #fff;
     padding: 10px;
     text-align: left;
@@ -49,54 +45,285 @@ thead th {
 
 tbody td {
     padding: 10px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border, #e5e7eb);
     background: #fff;
 }
-.right, .left{
-    margin-bottom: 12px;
-}
+
 tbody tr:hover { background: #f3f4f6; }
 
+/* Шүүлтүүрийн хэсэг */
+.filter-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.filter-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.filter-group input[type="date"],
+.filter-group select {
+    padding: 8px 12px;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 6px;
+    font-size: 14px;
+    min-width: 150px;
+}
+
+.filter-group select {
+    min-width: 250px;
+}
+
+.btn {
+    padding: 8px 16px;
+    background: var(--brand, #3b82f6);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.btn:hover { background: #2563eb; }
+.btn:disabled { background: #9ca3af; cursor: not-allowed; }
+.btn-secondary { background: #6b7280; }
+.btn-secondary:hover { background: #4b5563; }
+.btn-danger { background: #dc2626; }
+.btn-danger:hover { background: #b91c1c; }
+
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.modal-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.modal-icon.blue { background: #dbeafe; }
+.modal-icon.green { background: #d1fae5; }
+.modal-icon.yellow { background: #fef3c7; }
+
+.modal-icon svg {
+    width: 30px;
+    height: 30px;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.modal-message {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.modal-info {
+    background: #f3f4f6;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 20px;
+    text-align: left;
+    font-size: 13px;
+}
+
+.modal-info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+}
+
+.modal-info-label { color: #6b7280; }
+.modal-info-value { color: #1f2937; font-weight: 500; }
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.modal-buttons .btn { min-width: 120px; }
+
+/* Pending schedules */
+.pending-section {
+    margin-top: 16px;
+    padding: 16px;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+}
+
+.pending-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #92400e;
+}
+
+.pending-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background: white;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.pending-item:last-child { margin-bottom: 0; }
+
+.pending-info {
+    font-size: 13px;
+    color: #374151;
+}
+
+.pending-status {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.pending-status.processing {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
 @media (max-width: 900px) {
-    main { grid-template-columns: 1fr; }
+    .filter-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .filter-group select,
+    .filter-group input[type="date"] {
+        min-width: 100%;
+    }
 }
 </style>
 {% endblock %}
 
 {% block content %}
 <main>
-  <!-- Хайлтын хэсэг (optional) -->
-    {#  <section class="form-section card">#}
-    {#    <h3>Файл харьцуулах</h3>#}
-        {# Хэрэглэгч файлуудыг оруулах хэсэг #}
-    {#  </section>#}
-
-  <!-- Баримтын жагсаалт -->
   <section class="document-section card">
-    {% if comparison_result %}
     <div class="document-header">
-      <div class="left">
-        <h3 class="doc-title">Баримт</h3>
-            <form method="GET" action="" class="date-filter">
-              <label for="selected_date">Огноо:</label>
-              <input type="date" name="selected_date" id="selected_date" value="{{ selected_date|default:'' }}" >
-              <button type="submit" class="btn">Шүүх</button>
-            </form>
+      <h3 class="doc-title">Баримт татах</h3>
+
+      <!-- Шүүлтүүрийн хэсэг -->
+      <div class="filter-section">
+        <div class="filter-group">
+          <label for="start_date">Эхлэх огноо:</label>
+          <input type="date" name="start_date" id="start_date" value="{{ start_date|default:'' }}" required>
+        </div>
+
+        <div class="filter-group">
+          <label for="end_date">Дуусах огноо:</label>
+          <input type="date" name="end_date" id="end_date" value="{{ end_date|default:'' }}" required>
+        </div>
+
+        <div class="filter-group">
+          <label for="status">Баримтын төрөл:</label>
+          <select name="status" id="status">
+            <option value="0">Нийт борлуулалтын баримт</option>
+            <option value="4" selected>Багцын толгой баримт</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>&nbsp;</label>
+          <button id="downloadBtn" class="btn" type="button" onclick="openDownloadModal()">
+            Баримт татах
+          </button>
+        </div>
+
+        <div class="filter-group">
+          <label>&nbsp;</label>
+          <button class="btn btn-secondary" type="button" onclick="filterTable()">
+            Хүснэгтэнд харах
+          </button>
+        </div>
       </div>
-    <div class="right">
-      <label style="margin-right:10px;">
-        <input type="checkbox" id="checkTotal" name="checkTotal"> Нийт борлуулалтын баримт
-      </label>
-      <label style="margin-right:10px;">
-        <input type="checkbox" id="checkBatch" name="checkBatch"> Багцын толгой баримт
-      </label>
-      <button id="exportBtn" class="btn" type="button" onclick="downloadBarimt()">Баримт татаж авах</button>
+
+      <!-- Хүлээгдэж буй таталтууд -->
+      {% if pending_schedules %}
+      <div class="pending-section">
+        <h4>Хүлээгдэж буй таталтууд</h4>
+        {% for schedule in pending_schedules %}
+        <div class="pending-item" data-id="{{ schedule.id }}">
+          <div class="pending-info">
+            {{ schedule.start_date }} - {{ schedule.end_date }}
+            ({{ schedule.get_status_display }})
+          </div>
+          <div>
+            <span class="pending-status {% if schedule.download_status == 'processing' %}processing{% endif %}">
+              {{ schedule.get_download_status_display }}
+            </span>
+            {% if schedule.download_status == 'pending' %}
+            <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px; margin-left: 8px;"
+                    onclick="cancelSchedule({{ schedule.id }})">
+              Цуцлах
+            </button>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
+
+    {% if comparison_result %}
     <div class="document-box">
       <table>
         <thead>
           <tr>
-            <th>№</th>
+            <th>No</th>
             <th>Пос системийн дугаар</th>
             <th>ДДТД</th>
             <th>Огноо</th>
@@ -137,31 +364,246 @@ tbody tr:hover { background: #f3f4f6; }
       </table>
     </div>
     {% endif %}
-    </div>
   </section>
-    <div class="pagination" id="pagination">
-        {% if has_prev %}
-            <button class="btn" onclick="fetchBarimt('{{ selected_date }}', {{ page|add:'-1' }})">Өмнөх</button>
-        {% endif %}
-        <span>Хуудас {{ page }} / {{ total_pages }}</span>
-        {% if has_next %}
-            <button class="btn" onclick="fetchBarimt('{{ selected_date }}', {{ page|add:'1' }})">Дараах</button>
-        {% endif %}
-    </div>
+
+  <div class="pagination" id="pagination">
+    {% if has_prev %}
+      <button class="btn" onclick="fetchBarimt('{{ selected_date }}', {{ page|add:'-1' }})">Өмнөх</button>
+    {% endif %}
+    <span>Хуудас {{ page }} / {{ total_pages }}</span>
+    {% if has_next %}
+      <button class="btn" onclick="fetchBarimt('{{ selected_date }}', {{ page|add:'1' }})">Дараах</button>
+    {% endif %}
+  </div>
 </main>
+
+<!-- Modal Popup -->
+<div id="downloadModal" class="modal-overlay">
+  <div class="modal-content">
+    <!-- Баталгаажуулах -->
+    <div id="confirmView">
+      <div class="modal-icon blue">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#2563eb">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h3 class="modal-title">Баримт татах</h3>
+      <p class="modal-message">Баримт татах нь шөнийн 1 цагт эхэлнэ. Татсан файл таны компьютерт хадгалагдана.</p>
+
+      <div class="modal-info">
+        <div class="modal-info-row">
+          <span class="modal-info-label">Эхлэх огноо:</span>
+          <span class="modal-info-value" id="modalStartDate">-</span>
+        </div>
+        <div class="modal-info-row">
+          <span class="modal-info-label">Дуусах огноо:</span>
+          <span class="modal-info-value" id="modalEndDate">-</span>
+        </div>
+        <div class="modal-info-row">
+          <span class="modal-info-label">Баримтын төрөл:</span>
+          <span class="modal-info-value" id="modalStatus">-</span>
+        </div>
+        <div class="modal-info-row">
+          <span class="modal-info-label">Хадгалах зам:</span>
+          <span class="modal-info-value" id="modalPath">-</span>
+        </div>
+      </div>
+
+      <div class="modal-buttons">
+        <button class="btn btn-secondary" onclick="closeModal()">Болих</button>
+        <button class="btn" onclick="submitSchedule()">Батлах</button>
+      </div>
+    </div>
+
+    <!-- Амжилттай -->
+    <div id="successView" style="display: none;">
+      <div class="modal-icon green">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#059669">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <h3 class="modal-title">Амжилттай</h3>
+      <p class="modal-message" id="successMessage">Таталт шөнийн 1 цагт эхэлнэ.</p>
+
+      <div class="modal-buttons">
+        <button class="btn" onclick="closeModalAndRefresh()">Хаах</button>
+      </div>
+    </div>
+
+    <!-- Алдаа -->
+    <div id="errorView" style="display: none;">
+      <div class="modal-icon yellow">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#d97706">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <h3 class="modal-title">Алдаа</h3>
+      <p class="modal-message" id="errorMessage">Алдаа гарлаа.</p>
+
+      <div class="modal-buttons">
+        <button class="btn btn-secondary" onclick="closeModal()">Хаах</button>
+        <button class="btn" onclick="showConfirmView()">Дахин оролдох</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
+
 {% block extra_js %}
 <script>
-function downloadBarimt() {
-    const checkTotal = document.getElementById('checkTotal').checked;
-    const checkBatch = document.getElementById('checkBatch').checked;
+function validateDates() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+
+    if (!startDate || !endDate) {
+        alert('Эхлэх болон дуусах огноог оруулна уу!');
+        return false;
+    }
+
+    if (new Date(startDate) > new Date(endDate)) {
+        alert('Эхлэх огноо дуусах огнооноос хойно байж болохгүй!');
+        return false;
+    }
+
+    return true;
+}
+
+function getStatusText(status) {
+    return status === '0' ? 'Нийт борлуулалтын баримт' : 'Багцын толгой баримт';
+}
+
+function getMonthFolder(dateStr) {
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const monthNames = ['1-р сар', '2-р сар', '3-р сар', '4-р сар', '5-р сар', '6-р сар',
+                        '7-р сар', '8-р сар', '9-р сар', '10-р сар', '11-р сар', '12-р сар'];
+    return `C:\\${year}_${monthNames[month-1]}_задаргаа\\`;
+}
+
+function openDownloadModal() {
+    if (!validateDates()) return;
+
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    const status = document.getElementById('status').value;
+
+    document.getElementById('modalStartDate').textContent = startDate;
+    document.getElementById('modalEndDate').textContent = endDate;
+    document.getElementById('modalStatus').textContent = getStatusText(status);
+    document.getElementById('modalPath').textContent = getMonthFolder(startDate);
+
+    showConfirmView();
+    document.getElementById('downloadModal').classList.add('active');
+}
+
+function showConfirmView() {
+    document.getElementById('confirmView').style.display = 'block';
+    document.getElementById('successView').style.display = 'none';
+    document.getElementById('errorView').style.display = 'none';
+}
+
+function closeModal() {
+    document.getElementById('downloadModal').classList.remove('active');
+}
+
+function closeModalAndRefresh() {
+    closeModal();
+    location.reload();
+}
+
+function submitSchedule() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    const status = document.getElementById('status').value;
+
+    const formData = new FormData();
+    formData.append('start_date', startDate);
+    formData.append('end_date', endDate);
+    formData.append('status', status);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch("{% url 'schedule_download' %}", {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('confirmView').style.display = 'none';
+            document.getElementById('successView').style.display = 'block';
+            document.getElementById('successMessage').textContent =
+                data.message + ' Файл: ' + data.folder;
+        } else {
+            document.getElementById('confirmView').style.display = 'none';
+            document.getElementById('errorView').style.display = 'block';
+            document.getElementById('errorMessage').textContent = data.message;
+        }
+    })
+    .catch(error => {
+        document.getElementById('confirmView').style.display = 'none';
+        document.getElementById('errorView').style.display = 'block';
+        document.getElementById('errorMessage').textContent = 'Сервертэй холбогдоход алдаа гарлаа.';
+    });
+}
+
+function cancelSchedule(scheduleId) {
+    if (!confirm('Энэ таталтыг цуцлах уу?')) return;
+
+    const formData = new FormData();
+    formData.append('schedule_id', scheduleId);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch("{% url 'cancel_schedule' %}", {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        alert('Алдаа гарлаа');
+    });
+}
+
+function filterTable() {
+    if (!validateDates()) return;
+
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    const status = document.getElementById('status').value;
 
     let url = "{% url 'compare' %}?";
-    if(checkTotal) url += "total=1&";
-    if(checkBatch) url += "batch=1&";
-    const selectedDate = document.getElementById('selected_date')?.value;
-    if(selectedDate) url += "selected_date=" + selectedDate;
+    url += "start_date=" + startDate;
+    url += "&end_date=" + endDate;
+    url += "&status=" + status;
+
     window.location.href = url;
 }
+
+// Default огноо
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    const startInput = document.getElementById('start_date');
+    const endInput = document.getElementById('end_date');
+
+    if (!startInput.value) startInput.value = today;
+    if (!endInput.value) endInput.value = today;
+});
+
+// ESC товч
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+});
+
+// Modal гадна дарах
+document.getElementById('downloadModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
 </script>
 {% endblock %}

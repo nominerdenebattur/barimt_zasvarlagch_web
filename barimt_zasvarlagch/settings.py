@@ -149,3 +149,7 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # Ашиглах:
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_TIMEZONE = 'Asia/Ulaanbaatar'
