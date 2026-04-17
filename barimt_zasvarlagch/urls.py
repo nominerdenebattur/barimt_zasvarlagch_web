@@ -23,6 +23,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
     path('zasvarlah/', views.zasvarlah, name='zasvarlah'),
     path('generate/', views.ebarimt_generate, name='generate'),
     path('export_excel/', views.export_excel, name='export_excel'),
